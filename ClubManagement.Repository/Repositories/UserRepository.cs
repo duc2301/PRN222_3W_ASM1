@@ -1,0 +1,32 @@
+﻿using ClubManagement.Repository.Basic;
+using ClubManagement.Repository.DbContexts;
+using ClubManagement.Repository.Models;
+using ClubManagement.Repository.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ClubManagement.Repository.Repositories
+{
+    public class UserRepository : GenericRepository<User>, IUserRepository
+    {
+        public UserRepository(ClubManagementContext _context) : base(_context)
+        {
+
+        }
+
+        public async Task<User> Login(string username, string password)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username && u.Password == password);
+            return user;
+        }
+
+        public Task<User> SignUp(string username, string password)
+        {
+            throw new NotImplementedException();
+        }
+    }
+}

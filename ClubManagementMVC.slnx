@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="ClubManagement.Repository/ClubManagement.Repository.csproj" />
+  <Project Path="ClubManagement.Service/ClubManagement.Service.csproj" />
+  <Project Path="ClubManagementMVC/ClubManagementMVC.csproj" />
+</Solution>
