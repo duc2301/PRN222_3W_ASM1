@@ -16,6 +16,7 @@ namespace ClubManagement.Service
             CreateMap<Club, ClubResponseDTO>().ReverseMap();
             CreateMap<Club, CreateClubRequestDTO>().ReverseMap();
             CreateMap<Club, UpdateClubRequestDTO>().ReverseMap();
+            CreateMap<ClubResponseDTO, CreateClubRequestDTO>().ReverseMap();
             CreateMap<ClubResponseDTO, UpdateClubRequestDTO>().ReverseMap();
             CreateMap<User, UserResponseDTO>().ReverseMap();
 
