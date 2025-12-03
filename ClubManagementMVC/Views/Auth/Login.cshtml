@@ -1,0 +1,348 @@
+﻿@using ClubManagement.Service.DTOs.RequestDTOs
+@model LoginDTO
+@{
+    ViewData["Title"] = "Đăng Nhập";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .login-page-wrapper {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: calc(100vh - 50px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        padding: 20px;
+        margin: 0;
+        width: 100%;
+    }
+
+    .login-container {
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        padding: 48px;
+        width: 100%;
+        max-width: 440px;
+    }
+
+    .logo-section {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 40px;
+    }
+
+    .logo-icon {
+        width: 48px;
+        height: 48px;
+        background: #667eea ;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 18px;
+    }
+
+    .logo-text {
+        font-size: 20px;
+        font-weight: 700;
+        color: #1a202c;
+    }
+
+    .login-header {
+        text-align: center;
+        margin-bottom: 32px;
+    }
+
+    .login-title {
+        font-size: 32px;
+        font-weight: 700;
+        color: #1a202c;
+        margin-bottom: 8px;
+    }
+
+    .login-subtitle {
+        font-size: 15px;
+        color: #718096;
+    }
+
+    .google-login-btn {
+        width: 100%;
+        padding: 12px 24px;
+        background: white;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 15px;
+        font-weight: 500;
+        color: #1a202c;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        transition: all 0.2s;
+        margin-bottom: 24px;
+    }
+
+        .google-login-btn:hover {
+            background: #f7fafc;
+            border-color: #cbd5e0;
+        }
+
+    .google-icon {
+        width: 20px;
+        height: 20px;
+    }
+
+    .divider {
+        text-align: center;
+        margin: 24px 0;
+        position: relative;
+    }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 40%;
+            height: 1px;
+            background: #e2e8f0;
+        }
+
+        .divider::before {
+            left: 0;
+        }
+
+        .divider::after {
+            right: 0;
+        }
+
+    .divider-text {
+        font-size: 13px;
+        color: #a0aec0;
+        background: white;
+        padding: 0 16px;
+        position: relative;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 14px;
+        font-weight: 500;
+        color: #1a202c;
+        margin-bottom: 8px;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 15px;
+        transition: all 0.2s;
+        box-sizing: border-box;
+    }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: #cbd5e0;
+        }
+
+    .password-wrapper {
+        position: relative;
+    }
+
+    .toggle-password {
+        position: absolute;
+        right: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #a0aec0;
+        cursor: pointer;
+        padding: 0;
+        font-size: 18px;
+    }
+
+    .form-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+
+    .remember-me {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        color: #4a5568;
+    }
+
+        .remember-me input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+    .forgot-password {
+        font-size: 14px;
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+        .forgot-password:hover {
+            color: #764ba2;
+        }
+
+    .login-btn {
+        width: 100%;
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        border-radius: 8px;
+        font-size: 15px;
+        font-weight: 600;
+        color: white;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-bottom: 20px;
+    }
+
+        .login-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+        }
+
+    .signup-link {
+        text-align: center;
+        font-size: 14px;
+        color: #718096;
+    }
+
+        .signup-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+            .signup-link a:hover {
+                color: #764ba2;
+            }
+
+    .validation-message {
+        color: #e53e3e;
+        font-size: 13px;
+        margin-top: 6px;
+    }
+</style>
+
+<div class="login-page-wrapper">
+    <div class="login-container">
+        <div class="logo-section">
+            <div class="logo-icon">CMS</div>
+            <span class="logo-text">Club Management system</span>
+        </div>
+
+        <div class="login-header">
+            <h1 class="login-title">Login</h1>
+            <p class="login-subtitle">Hi, Welcome back </p>
+        </div>
+
+
+        @using (Html.BeginForm("Login", "Auth", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="form-group">
+                <label class="form-label">User Name</label>
+                @Html.TextBoxFor(m => m.Username, new { @class = "form-input", placeholder = "student123"})
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <div class="password-wrapper">
+                    @Html.PasswordFor(m => m.Password, new { @class = "form-input", placeholder = "Enter your password", id = "passwordInput" })
+                    <button type="button" class="toggle-password" onclick="togglePassword()">
+                        <span id="eyeIcon">Show</span>
+                    </button>
+                </div>
+                @Html.ValidationMessageFor(m => m.Password, "", new { @class = "validation-message" })
+            </div>
+
+            <div class="form-footer">
+                <label class="remember-me">
+                    @* @Html.CheckBoxFor(m => m.RememberMe) *@
+                    <span>Remember Me</span>
+                </label>
+                <a href="@Url.Action("ForgotPassword", "Auth")" class="forgot-password">Forgot Password?</a>
+            </div>
+
+            <button type="submit" class="login-btn">Login</button>
+        }
+
+        <div class="signup-link">
+            Not registered yet? <a href="@Url.Action("Register", "Auth")">Create an account ↗</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    function togglePassword() {
+        const passwordInput = document.getElementById('passwordInput');
+        const eyeIcon = document.getElementById('eyeIcon');
+
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            eyeIcon.textContent = 'Hide';
+        } else {
+            passwordInput.type = 'password';
+            eyeIcon.textContent = 'Show';
+        }
+    }
+
+    function loginWithGoogle() {
+        // Implement Google OAuth login logic here
+        alert('Google login functionality would be implemented here');
+    }
+</script>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var mainTag = document.querySelector('main[role="main"]');
+        var containerTag = mainTag ? mainTag.parentElement : null;
+
+        if (containerTag && containerTag.classList.contains('container')) {
+            containerTag.classList.remove('container');
+            containerTag.classList.add('container-fluid');
+
+            containerTag.style.paddingLeft = "0";
+            containerTag.style.paddingRight = "0";
+        }
+        if (mainTag) {
+            mainTag.classList.remove('pb-3');
+        }
+    });
+</script>

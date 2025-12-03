@@ -4,6 +4,7 @@ using ClubManagement.Repository.Models;
 using ClubManagement.Service.DTOs.RequestDTOs;
 using ClubManagement.Service.DTOs.ResponseDTOs;
 using ClubManagement.Service.ServiceProviders.Interface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +15,7 @@ using System.Threading.Tasks;
 
 namespace ClubManagementMVC.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class ClubsController : Controller
     {
         private readonly IServiceProviders _serviceProviders;
