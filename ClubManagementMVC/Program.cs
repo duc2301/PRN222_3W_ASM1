@@ -1,4 +1,4 @@
-using ClubManagement.Repository.Basic;
+﻿using ClubManagement.Repository.Basic;
 using ClubManagement.Repository.Basic.Interfaces;
 using ClubManagement.Repository.DbContexts;
 using ClubManagement.Repository.Repositories;
@@ -10,6 +10,7 @@ using ClubManagement.Service.ServiceProviders;
 using ClubManagement.Service.ServiceProviders.Interface;
 using ClubManagement.Service.Services;
 using ClubManagement.Service.Services.Interfaces;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -22,6 +23,13 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 
 builder.Services.AddDbContext<ClubManagementContext>(options =>
     options.UseSqlServer(connectionString));
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Auth/Login";
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+    });
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IServiceProviders, ServiceProviders>();
@@ -58,7 +66,10 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+
+
 app.UseAuthorization();
+
 
 app.MapControllerRoute(
     name: "default",
