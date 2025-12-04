@@ -1,0 +1,132 @@
+@using ClubManagement.Service.DTOs.RequestDTOs.Activity
+@model ActivityCreateDTO
+
+@{
+    ViewData["Title"] = "Create Activity";
+}
+
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="fw-bold text-primary">
+                <i class="bi bi-plus-circle me-2"></i>Create New Activity
+            </h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a asp-action="Index">Activities</a></li>
+                    <li class="breadcrumb-item active">Create</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-calendar-event me-2"></i>Activity Information</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post" id="createActivityForm">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <div class="form-group">
+                                    <label asp-for="ActivityName" class="form-label fw-bold">
+                                        <i class="bi bi-tag me-1"></i>Activity Name <span class="text-danger">*</span>
+                                    </label>
+                                    <input asp-for="ActivityName" class="form-control form-control-lg" placeholder="Enter activity name" />
+                                    <span asp-validation-for="ActivityName" class="text-danger small"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label asp-for="ClubId" class="form-label fw-bold">
+                                        <i class="bi bi-building me-1"></i>Club <span class="text-danger">*</span>
+                                    </label>
+                                    <select asp-for="ClubId" class="form-select form-select-lg" asp-items="ViewBag.ClubId">
+                                        <option value="">-- Select Club --</option>
+                                    </select>
+                                    <span asp-validation-for="ClubId" class="text-danger small"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label asp-for="Description" class="form-label fw-bold">
+                                        <i class="bi bi-card-text me-1"></i>Description
+                                    </label>
+                                    <textarea asp-for="Description" class="form-control" rows="4" 
+                                              placeholder="Describe the activity..."></textarea>
+                                    <span asp-validation-for="Description" class="text-danger small"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="StartDate" class="form-label fw-bold">
+                                        <i class="bi bi-calendar-event me-1"></i>Start Date & Time <span class="text-danger">*</span>
+                                    </label>
+                                    <input asp-for="StartDate" type="datetime-local" class="form-control" />
+                                    <span asp-validation-for="StartDate" class="text-danger small"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="EndDate" class="form-label fw-bold">
+                                        <i class="bi bi-calendar-check me-1"></i>End Date & Time
+                                    </label>
+                                    <input asp-for="EndDate" type="datetime-local" class="form-control" />
+                                    <span asp-validation-for="EndDate" class="text-danger small"></span>
+                                    <small class="text-muted">Leave empty if no end time</small>
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label asp-for="Location" class="form-label fw-bold">
+                                        <i class="bi bi-geo-alt me-1"></i>Location
+                                    </label>
+                                    <input asp-for="Location" class="form-control" placeholder="Enter location" />
+                                    <span asp-validation-for="Location" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="border-top mt-4 pt-4">
+                            <div class="d-flex justify-content-between">
+                                <a asp-action="Index" class="btn btn-outline-secondary btn-lg">
+                                    <i class="bi bi-arrow-left me-1"></i>Cancel
+                                </a>
+                                <button type="submit" class="btn btn-success btn-lg">
+                                    <i class="bi bi-check-circle me-1"></i>Create Activity
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Help Card -->
+            <div class="card shadow-sm border-0 mt-4">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3"><i class="bi bi-info-circle me-2"></i>Tips</h6>
+                    <ul class="mb-0 small text-muted">
+                        <li>Choose a clear and descriptive activity name</li>
+                        <li>Ensure start date is before end date</li>
+                        <li>Provide detailed description to attract participants</li>
+                        <li>Include specific location information</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script src="~/js/activities.js" asp-append-version="true"></script>
+}

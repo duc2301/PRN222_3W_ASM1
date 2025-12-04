@@ -1,0 +1,315 @@
+@using ClubManagement.Service.DTOs.ResponseDTOs
+@model ActivityResponseDTO
+
+@{
+    ViewData["Title"] = "Activity Details";
+    var statusClass = "secondary";
+    var statusText = "Unknown";
+    var statusIcon = "question-circle";
+    
+    if (Model.EndDate.HasValue && Model.EndDate < DateTime.Now)
+    {
+        statusClass = "secondary";
+        statusText = "Completed";
+        statusIcon = "check-circle";
+    }
+    else if (Model.StartDate > DateTime.Now)
+    {
+        statusClass = "info";
+        statusText = "Upcoming";
+        statusIcon = "clock";
+    }
+    else if (Model.StartDate <= DateTime.Now && (!Model.EndDate.HasValue || Model.EndDate >= DateTime.Now))
+    {
+        statusClass = "success";
+        statusText = "Ongoing";
+        statusIcon = "play-circle";
+    }
+}
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="fw-bold text-primary mb-2">
+                        <i class="bi bi-calendar-event me-2"></i>@Model.ActivityName
+                    </h2>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item"><a asp-action="Index">Activities</a></li>
+                            <li class="breadcrumb-item active">Details</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div>
+                    <a asp-action="Index" class="btn btn-outline-secondary me-2">
+                        <i class="bi bi-arrow-left me-1"></i>Back to List
+                    </a>
+                    <a asp-action="Edit" asp-route-id="@Model.ActivityId" class="btn btn-warning me-2">
+                        <i class="bi bi-pencil me-1"></i>Edit
+                    </a>
+                    <a asp-action="Delete" asp-route-id="@Model.ActivityId" class="btn btn-danger">
+                        <i class="bi bi-trash me-1"></i>Delete
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Activity Information -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-gradient bg-@statusClass text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-@statusIcon me-2"></i>Activity Information
+                        <span class="badge bg-white bg-opacity-25 float-end">@statusText</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="small text-muted fw-bold mb-1">
+                                <i class="bi bi-tag me-1"></i>Activity Name
+                            </label>
+                            <p class="mb-0 fw-bold">@Model.ActivityName</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="small text-muted fw-bold mb-1">
+                                <i class="bi bi-building me-1"></i>Club
+                            </label>
+                            <p class="mb-0">
+                                <span class="badge bg-primary">@(Model.Club?.ClubName ?? "N/A")</span>
+                            </p>
+                        </div>
+                        <div class="col-12">
+                            <label class="small text-muted fw-bold mb-1">
+                                <i class="bi bi-card-text me-1"></i>Description
+                            </label>
+                            <p class="mb-0">@(Model.Description ?? "No description provided.")</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="small text-muted fw-bold mb-1">
+                                <i class="bi bi-calendar-event me-1"></i>Start Date
+                            </label>
+                            <p class="mb-0">
+                                <span class="badge bg-info bg-opacity-10 text-info">
+                                    @Model.StartDate.ToString("dddd, dd MMMM yyyy HH:mm")
+                                </span>
+                            </p>
+                        </div>
+                        @if (Model.EndDate.HasValue)
+                        {
+                            <div class="col-md-6">
+                                <label class="small text-muted fw-bold mb-1">
+                                    <i class="bi bi-calendar-check me-1"></i>End Date
+                                </label>
+                                <p class="mb-0">
+                                    <span class="badge bg-warning bg-opacity-10 text-warning">
+                                        @Model.EndDate.Value.ToString("dddd, dd MMMM yyyy HH:mm")
+                                    </span>
+                                </p>
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.Location))
+                        {
+                            <div class="col-12">
+                                <label class="small text-muted fw-bold mb-1">
+                                    <i class="bi bi-geo-alt me-1"></i>Location
+                                </label>
+                                <p class="mb-0">
+                                    <i class="bi bi-pin-map-fill text-danger me-2"></i>@Model.Location
+                                </p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Participants List -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-people me-2"></i>Participants
+                        <span class="badge bg-white bg-opacity-25 float-end">
+                            @Model.ActivityParticipants.Count participants
+                        </span>
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.ActivityParticipants.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th class="py-3 ps-4">#</th>
+                                        <th class="py-3">Participant</th>
+                                        <th class="py-3">Email</th>
+                                        <th class="py-3">Phone</th>
+                                        <th class="py-3">Check-in Time</th>
+                                        <th class="py-3">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        int index = 1;
+                                    }
+                                    @foreach (var participant in Model.ActivityParticipants.OrderBy(p => p.CheckInTime))
+                                    {
+                                        <tr class="participant-row">
+                                            <td class="ps-4 fw-bold">@index</td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="https://ui-avatars.com/api/?name=@participant.User.FullName&background=random" 
+                                                         alt="Avatar" 
+                                                         class="rounded-circle me-2"
+                                                         style="width: 40px; height: 40px;">
+                                                    <div>
+                                                        <div class="fw-bold">@participant.User.FullName</div>
+                                                        <small class="text-muted">@participant.User.Role</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <small>
+                                                    <i class="bi bi-envelope me-1"></i>@participant.User.Email
+                                                </small>
+                                            </td>
+                                            <td>
+                                                <small>
+                                                    <i class="bi bi-phone me-1"></i>@(participant.User.Phone ?? "N/A")
+                                                </small>
+                                            </td>
+                                            <td>
+                                                @if (participant.CheckInTime.HasValue)
+                                                {
+                                                    <span class="badge bg-success bg-opacity-10 text-success">
+                                                        <i class="bi bi-check-circle me-1"></i>
+                                                        @participant.CheckInTime.Value.ToString("dd/MM/yyyy HH:mm")
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary">Not checked in</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @{
+                                                    var statusBadge = participant.Status switch
+                                                    {
+                                                        "Registered" => "badge bg-info",
+                                                        "Attended" => "badge bg-success",
+                                                        "Absent" => "badge bg-danger",
+                                                        _ => "badge bg-secondary"
+                                                    };
+                                                }
+                                                <span class="@statusBadge">@(participant.Status ?? "Unknown")</span>
+                                            </td>
+                                        </tr>
+                                        index++;
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="bi bi-person-x fs-1 text-muted"></i>
+                            <p class="text-muted mt-3">No participants registered yet.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Sidebar -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted">Total Participants</span>
+                            <span class="fs-4 fw-bold text-primary">@Model.ActivityParticipants.Count</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-primary" style="width: 100%"></div>
+                        </div>
+                    </div>
+
+                    @{
+                        var attendedCount = Model.ActivityParticipants.Count(p => p.Status == "Attended");
+                        var registeredCount = Model.ActivityParticipants.Count(p => p.Status == "Registered");
+                        var absentCount = Model.ActivityParticipants.Count(p => p.Status == "Absent");
+                        var totalCount = Model.ActivityParticipants.Count;
+                        var attendedPercent = totalCount > 0 ? (attendedCount * 100.0 / totalCount) : 0;
+                    }
+
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted">Attended</span>
+                            <span class="fs-5 fw-bold text-success">@attendedCount</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" style="width: @attendedPercent%"></div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted">Registered</span>
+                            <span class="fs-5 fw-bold text-info">@registeredCount</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-0">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted">Absent</span>
+                            <span class="fs-5 fw-bold text-danger">@absentCount</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Club Info -->
+            @if (Model.Club != null)
+            {
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="bi bi-building me-2"></i>Club Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-3">@Model.Club.ClubName</h6>
+                        <p class="text-muted small mb-3">@(Model.Club.Description ?? "No description")</p>
+                        @if (Model.Club.Leader != null)
+                        {
+                            <div class="border-top pt-3">
+                                <small class="text-muted d-block mb-2">Club Leader</small>
+                                <div class="d-flex align-items-center">
+                                    <img src="https://ui-avatars.com/api/?name=@Model.Club.Leader.FullName&background=random" 
+                                         alt="Avatar" 
+                                         class="rounded-circle me-2"
+                                         style="width: 35px; height: 35px;">
+                                    <div>
+                                        <div class="small fw-bold">@Model.Club.Leader.FullName</div>
+                                        <div class="small text-muted">@Model.Club.Leader.Email</div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/activities.js" asp-append-version="true"></script>
+}
