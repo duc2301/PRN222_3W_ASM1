@@ -10,5 +10,6 @@ namespace ClubManagement.Repository.Repositories.Interfaces
 {
     public interface IClubRepository : IGenericRepository<Club>
     {
+        Task<bool> ExistsByNameAsync(string name);
     }
 }

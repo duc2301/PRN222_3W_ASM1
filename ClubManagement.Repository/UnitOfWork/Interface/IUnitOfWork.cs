@@ -1,4 +1,6 @@
-﻿using ClubManagement.Repository.Repositories.Interfaces;
+﻿using ClubManagement.Repository.Basic.Interfaces;
+using ClubManagement.Repository.DbContexts;
+using ClubManagement.Repository.Repositories.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +19,10 @@ namespace ClubManagement.Repository.UnitOfWork.Interface
         IClubRepository ClubRepository { get; }
         IActivityRepository ActivityRepository { get; }
         IActivityParticipantRepository ActivityParticipantRepository { get; }
+        ClubManagementContext DbContext { get; }
+        IGenericRepository<T> GetGenericRepository<T>() where T : class;
+
         Task<int> SaveChangesAsync();
+
     }
 }

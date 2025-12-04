@@ -1,0 +1,55 @@
+﻿@model IEnumerable<ClubManagement.Repository.Models.JoinRequest>
+
+@{
+    ViewData["Title"] = "Join Requests";
+}
+
+<h2>Join Requests</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>User</th>
+            <th>Club</th>
+            <th>Status</th>
+            <th>Request Date</th>
+            <th>Note</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var r in Model)
+        {
+            <tr>
+                <td>@r.UserId</td>
+                <td>@r.ClubId</td>
+                <td>@r.Status</td>
+                <td>@r.RequestDate</td>
+                <td>@r.Note</td>
+                <td>
+                    @if (r.Status == "Pending")
+                    {
+                        @if (User.IsInRole("Admin") || User.IsInRole("Leader"))
+                        {
+                            <a class="btn btn-success btn-sm" href="/JoinRequests/Approve/@r.RequestId">Approve</a>
+                            <a class="btn btn-danger btn-sm" href="/JoinRequests/Reject/@r.RequestId">Reject</a>
+                        }
+                        else
+                        {
+                            <span>No permission</span>
+                        }
+                    }
+                    else
+                    {
+                        <span>No actions</span>
+                    }
+
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a class="btn btn-primary" asp-controller="JoinRequests" asp-action="Submit">Create New Request</a>
+
+

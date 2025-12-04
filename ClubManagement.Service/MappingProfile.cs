@@ -19,6 +19,7 @@ namespace ClubManagement.Service
             CreateMap<ClubResponseDTO, CreateClubRequestDTO>().ReverseMap();
             CreateMap<ClubResponseDTO, UpdateClubRequestDTO>().ReverseMap();
             CreateMap<User, UserResponseDTO>().ReverseMap();
+            CreateMap<JoinRequest, JoinRequestResponseDTO>();
 
             // Map phức tạp (Khác tên hoặc lấy dữ liệu từ bảng khác)
             //CreateMap<Club, ClubResponseDTO>()

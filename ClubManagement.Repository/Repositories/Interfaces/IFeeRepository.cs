@@ -10,5 +10,6 @@ namespace ClubManagement.Repository.Repositories.Interfaces
 {
     public interface IFeeRepository : IGenericRepository<Fee>
     {
+        Task<List<Fee>> GetByClubAsync(int clubId);
     }
 }

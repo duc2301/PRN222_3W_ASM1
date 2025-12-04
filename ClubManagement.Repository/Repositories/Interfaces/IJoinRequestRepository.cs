@@ -10,5 +10,7 @@ namespace ClubManagement.Repository.Repositories.Interfaces
 {
     public interface IJoinRequestRepository : IGenericRepository<JoinRequest>
     {
+        Task<List<JoinRequest>> GetByUserAsync(int userId);
+        Task<List<JoinRequest>> GetByClubAsync(int clubId);
     }
 }

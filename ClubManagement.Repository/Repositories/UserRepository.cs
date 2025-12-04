@@ -28,5 +28,10 @@ namespace ClubManagement.Repository.Repositories
         {
             throw new NotImplementedException();
         }
+        public async Task<User?> GetByUsernameAsync(string username)
+        {
+            return await _context.Users
+                .FirstOrDefaultAsync(x => x.Username == username);
+        }
     }
 }

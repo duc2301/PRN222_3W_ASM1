@@ -73,5 +73,8 @@ namespace ClubManagement.Repository.UnitOfWork
             Dispose(true);
             GC.SuppressFinalize(this);
         }
+
+        public ClubManagementContext DbContext => _context;
     }
+
 }

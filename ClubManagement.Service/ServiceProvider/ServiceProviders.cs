@@ -23,5 +23,17 @@ namespace ClubManagement.Service.ServiceProviders
         public IClubService ClubService => new ClubService(_unitOfWork, _mapper);
 
         public IUserService UserService => new UserService(_unitOfWork, _mapper);
+        public IJoinRequestService JoinRequestService
+          => new JoinRequestService(
+              _unitOfWork.JoinRequestRepository,
+              _unitOfWork.MembershipRepository,
+              _unitOfWork.UserRepository,
+              _unitOfWork.DbContext
+          );
+        public IPaymentService PaymentService
+        => new PaymentService(
+            _unitOfWork.PaymentRepository,
+            _unitOfWork.DbContext
+        );
     }
 }
