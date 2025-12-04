@@ -1,0 +1,77 @@
+﻿@using ClubManagement.Service.DTOs.ResponseDTOs
+@model IEnumerable<ClubResponseDTO>
+
+@{
+    Layout = "~/Views/Shared/_ClubLayout.cshtml";
+    ViewData["Title"] = "Danh sách CLB của tôi";
+    ViewData["HeaderTitle"] = "Danh sách CLB của tôi";
+    ViewData["HeaderSubtitle"] = "Những câu lạc bộ mà bạn đang là Club Leader";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="h5 fw-semibold mb-1">CLB của tôi</h2>
+        <p class="text-muted mb-0" style="font-size: 14px;">
+            Quản lý các câu lạc bộ và thành viên trong phạm vi bạn phụ trách.
+        </p>
+    </div>
+    <a asp-controller="Clubs" asp-action="Create" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i> Tạo CLB mới
+    </a>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="text-center py-5 text-muted">
+        <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+        <div class="fw-semibold mb-1">Bạn chưa quản lý câu lạc bộ nào</div>
+        <div>Hãy tạo CLB mới hoặc chờ Admin phân quyền.</div>
+    </div>
+}
+else
+{
+    <div class="row g-4">
+        @foreach (var club in Model)
+        {
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-start mb-3">
+                            <div class="rounded-3 d-inline-flex align-items-center justify-content-center me-3"
+                                 style="width:40px; height:40px; background:#eef2ff;">
+                                <i class="bi bi-people-fill text-primary"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-1">@club.ClubName</h5>
+                                @if (!string.IsNullOrWhiteSpace(club.Description))
+                                {
+                                    <p class="text-muted small mb-0">
+                                        @club.Description
+                                    </p>
+                                }
+                                else
+                                {
+                                    <p class="text-muted small mb-0">
+                                        Nơi sinh viên cùng sinh hoạt và phát triển kỹ năng.
+                                    </p>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white border-0 d-flex justify-content-between align-items-center">
+                        <div class="text-muted small">
+                            <i class="bi bi-person me-1"></i>
+                          
+                        </div>
+                        <a asp-controller="Clubs"
+                           asp-action="Details"
+                           asp-route-id="@club.ClubId"
+                           class="text-primary fw-semibold small text-decoration-none">
+                            Quản lý <i class="bi bi-arrow-right-short"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

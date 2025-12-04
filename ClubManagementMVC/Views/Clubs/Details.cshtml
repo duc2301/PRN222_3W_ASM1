@@ -1,43 +1,293 @@
 ﻿@using ClubManagement.Service.DTOs.ResponseDTOs
-@model ClubResponseDTO
+@model ClubMembersPageViewModel
 
 @{
-    ViewData["Title"] = "Details";
+    Layout = "~/Views/Shared/_ClubLayout.cshtml";
+
+    ViewData["Title"] = "Quản lý CLB";
+    var clubName = Model?.Club?.ClubName ?? "Coding Club";
+    var clubDescription = Model?.Club?.Description ?? "CLB lập trình dành cho sinh viên yêu thích CNTT.";
 }
 
-<h1>Details</h1>
+<style>
+    .club-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 24px;
+    }
 
-<div>
-    <h4>Club</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ClubName)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ClubName)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Description)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Description)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.CreatedAt)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.CreatedAt)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Leader)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Leader.Email)
-        </dd>
-    </dl>
+    .club-header-left small {
+        color: #6b7280;
+    }
+
+    .club-header-actions button {
+        border-radius: 8px;
+        font-size: 14px;
+        padding: 8px 14px;
+    }
+
+    .club-header-actions .btn-config {
+        background: #020617;
+        color: #ffffff;
+        border: none;
+    }
+
+    .club-tabs {
+        border-bottom: 1px solid #e5e7eb;
+        margin-bottom: 16px;
+    }
+
+        .club-tabs .nav-link {
+            font-size: 14px;
+            color: #6b7280;
+            padding: 10px 0;
+            margin-right: 20px;
+            border: none;
+            border-bottom: 2px solid transparent;
+            background: transparent;
+            border-radius: 0;
+        }
+
+            .club-tabs .nav-link.active {
+                color: #111827;
+                font-weight: 600;
+                border-bottom-color: #111827;
+                background: transparent;
+            }
+
+    /* --- styles dùng cho tab Thành viên (partial _MembersTab) --- */
+
+    .member-filters {
+        background: #f9fafb;
+        border-radius: 14px;
+        padding: 16px 18px;
+        margin-bottom: 18px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+    }
+
+        .member-filters .form-control,
+        .member-filters .form-select {
+            font-size: 14px;
+            border-radius: 999px;
+            padding: 8px 14px;
+        }
+
+        .member-filters .form-select {
+            padding-right: 32px; /* tránh text đè mũi tên */
+            background-position: right 12px center;
+        }
+
+    .btn-filter {
+        border-radius: 999px;
+        padding: 8px 18px;
+        font-size: 14px;
+    }
+
+    .btn-add-member {
+        border-radius: 10px;
+        font-size: 14px;
+        padding: 10px 18px;
+    }
+
+    .member-table {
+        background: #ffffff;
+        border-radius: 14px;
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+    }
+
+        .member-table table {
+            margin-bottom: 0;
+        }
+
+        .member-table thead {
+            background: #f9fafb;
+        }
+
+        .member-table th {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #9ca3af;
+            border-bottom: none !important;
+        }
+
+        .member-table td {
+            font-size: 14px;
+            vertical-align: middle;
+        }
+
+    .member-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 999px;
+        background: #e5e7eb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: 600;
+        margin-right: 10px;
+    }
+
+    .member-name {
+        font-weight: 500;
+        color: #111827;
+    }
+
+    .member-email {
+        font-size: 12px;
+        color: #6b7280;
+    }
+
+    .badge-status {
+        border-radius: 999px;
+        font-size: 12px;
+        padding: 4px 10px;
+    }
+
+        .badge-status.active {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .badge-status.banned {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+    .btn-edit-member {
+        border-radius: 999px;
+        font-size: 13px;
+        padding: 4px 10px;
+    }
+</style>
+
+<div class="club-header">
+    <div class="club-header-left">
+        <a asp-action="MyClubs" asp-controller="Clubs"
+           class="text-muted mb-2 d-inline-flex align-items-center"
+           style="font-size: 13px; text-decoration: none;">
+            <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách
+        </a>
+
+        <h2 class="h4 fw-semibold mb-1">
+            @clubName
+        </h2>
+        <small>@clubDescription</small>
+    </div>
+
+    <div class="club-header-actions d-flex gap-2">
+        @* KHÔNG có nút chia sẻ *@
+        <button type="button" class="btn btn-config">
+            <i class="bi bi-gear-fill me-1"></i> Cấu hình
+        </button>
+    </div>
 </div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.ClubId">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+
+<ul class="nav club-tabs" id="clubTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link"
+                id="tab-dashboard"
+                data-bs-toggle="tab"
+                data-bs-target="#pane-dashboard"
+                type="button" role="tab">
+            Dashboard
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active"
+                id="tab-members"
+                data-bs-toggle="tab"
+                data-bs-target="#pane-members"
+                type="button" role="tab">
+            Thành viên
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link"
+                id="tab-join"
+                data-bs-toggle="tab"
+                data-bs-target="#pane-join"
+                type="button" role="tab">
+            Đơn gia nhập
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link"
+                id="tab-activities"
+                data-bs-toggle="tab"
+                data-bs-target="#pane-activities"
+                type="button" role="tab">
+            Hoạt động
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link"
+                id="tab-fee"
+                data-bs-toggle="tab"
+                data-bs-target="#pane-fee"
+                type="button" role="tab">
+            Quỹ &amp; Phí
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link"
+                id="tab-report"
+                data-bs-toggle="tab"
+                data-bs-target="#pane-report"
+                type="button" role="tab">
+            Báo cáo
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content mt-2">
+    <!-- Dashboard -->
+    <div class="tab-pane fade" id="pane-dashboard" role="tabpanel" aria-labelledby="tab-dashboard">
+        <div class="alert alert-light border d-flex align-items-center mb-0">
+            <i class="bi bi-bar-chart-line me-2"></i>
+            <span>Dashboard sẽ được phát triển sau (hiện chỉ là UI demo).</span>
+        </div>
+    </div>
+
+    <!-- Thành viên -->
+    <div class="tab-pane fade show active" id="pane-members" role="tabpanel" aria-labelledby="tab-members">
+        @await Html.PartialAsync("Tabs/_MembersTab", Model)
+    </div>
+
+    <!-- Đơn gia nhập -->
+    <div class="tab-pane fade" id="pane-join" role="tabpanel" aria-labelledby="tab-join">
+        <div class="alert alert-light border mb-0">
+            <i class="bi bi-person-check me-2"></i>
+            Tab <strong>Đơn gia nhập</strong> sẽ được xử lý backend & UI chi tiết sau.
+        </div>
+    </div>
+
+    <!-- Hoạt động -->
+    <div class="tab-pane fade" id="pane-activities" role="tabpanel" aria-labelledby="tab-activities">
+        <div class="alert alert-light border mb-0">
+            <i class="bi bi-calendar-event me-2"></i>
+            Tab <strong>Hoạt động</strong> sẽ được phát triển sau.
+        </div>
+    </div>
+
+    <!-- Quỹ & Phí -->
+    <div class="tab-pane fade" id="pane-fee" role="tabpanel" aria-labelledby="tab-fee">
+        <div class="alert alert-light border mb-0">
+            <i class="bi bi-cash-coin me-2"></i>
+            Tab <strong>Quỹ &amp; Phí</strong> sẽ được phát triển sau.
+        </div>
+    </div>
+
+    <!-- Báo cáo -->
+    <div class="tab-pane fade" id="pane-report" role="tabpanel" aria-labelledby="tab-report">
+        <div class="alert alert-light border mb-0">
+            <i class="bi bi-clipboard-data me-2"></i>
+            Tab <strong>Báo cáo</strong> sẽ được phát triển sau.
+        </div>
+    </div>
 </div>
