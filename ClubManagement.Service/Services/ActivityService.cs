@@ -5,6 +5,7 @@ using ClubManagement.Service.DTOs.ResponseDTOs;
 using ClubManagement.Service.Services.Interfaces;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using ClubManagement.Repository.Repositories.Interfaces;
 using ClubManagement.Service.DTOs.RequestDTOs.Activity;
 using Activity = ClubManagement.Repository.Models.Activity;
 
@@ -14,22 +15,24 @@ namespace ClubManagement.Service.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-
-        public ActivityService(IUnitOfWork unitOfWork, IMapper mapper)
+        private readonly IActivityRepository _activityRepository;
+        
+        public ActivityService(IUnitOfWork unitOfWork, IMapper mapper, IActivityRepository activityRepository)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _activityRepository = activityRepository;
         }
 
         public async Task<List<ActivityResponseDTO>> GetAllAsync()
         {
-            var activities = await _unitOfWork.ActivityRepository.GetAllAsync();
+            var activities = await _activityRepository.GetAllActivitiesWithRelations();
             return _mapper.Map<List<ActivityResponseDTO>>(activities);
         }
 
         public async Task<ActivityResponseDTO?> GetByIdAsync(int id)
         {
-            var activity = await _unitOfWork.ActivityRepository.GetByIdAsync(id);
+            var activity = await _activityRepository.GetActivityWithRelationsById(id);
             return _mapper.Map<ActivityResponseDTO>(activity);
         }
 

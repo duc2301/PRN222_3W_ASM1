@@ -23,6 +23,8 @@ namespace ClubManagement.Service.DTOs.ResponseDTOs
 
         public string? Location { get; set; }
 
-        public virtual Club? Club { get; set; }
+        public ClubResponseDTO Club { get; set; } = null!;
+        
+        public List<ActivityParticipantResponseDTO> ActivityParticipants { get; set; } = [];
     }
 }

@@ -10,5 +10,7 @@ namespace ClubManagement.Repository.Repositories.Interfaces
 {
     public interface IActivityRepository : IGenericRepository<Activity>
     {
+        Task<List<Activity>> GetAllActivitiesWithRelations();
+        Task<Activity?> GetActivityWithRelationsById(int id);
     }
 }
