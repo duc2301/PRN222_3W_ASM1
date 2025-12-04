@@ -3,11 +3,6 @@ using ClubManagement.Repository.DbContexts;
 using ClubManagement.Repository.Models;
 using ClubManagement.Repository.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ClubManagement.Repository.Repositories
 {
@@ -27,6 +22,13 @@ namespace ClubManagement.Repository.Repositories
         public Task<User> SignUp(string username, string password)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<List<User>> GetLeadersAsync()
+        {
+            return await _context.Users
+                .Where(u => u.Role == "Admin")
+                .ToListAsync();
         }
     }
 }
