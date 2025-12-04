@@ -47,6 +47,7 @@ builder.Services.AddScoped<IFeeRepository, FeeRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IClubService, ClubService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IActivityService, ActivityService>();
 
 
 
