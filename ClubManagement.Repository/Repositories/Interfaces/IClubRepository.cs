@@ -10,5 +10,7 @@ namespace ClubManagement.Repository.Repositories.Interfaces
 {
     public interface IClubRepository : IGenericRepository<Club>
     {
+        Task<List<Club>> GetAllAsync();
+        Task<Club> GetByIdAsync(int id);
     }
 }

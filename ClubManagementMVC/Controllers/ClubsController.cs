@@ -1,6 +1,4 @@
 ﻿using AutoMapper;
-using ClubManagement.Repository.DbContexts;
-using ClubManagement.Repository.Models;
 using ClubManagement.Service.DTOs.RequestDTOs;
 using ClubManagement.Service.DTOs.ResponseDTOs;
 using ClubManagement.Service.ServiceProviders.Interface;
@@ -8,10 +6,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ClubManagementMVC.Controllers
 {
@@ -35,6 +29,7 @@ namespace ClubManagementMVC.Controllers
         public async Task<ActionResult<List<ClubResponseDTO>>> Index()
         {
             var ClubList = await _serviceProviders.ClubService.GetAllAsync();
+
             return View(ClubList);
         }
 
@@ -58,7 +53,12 @@ namespace ClubManagementMVC.Controllers
         // GET: Clubs/Create
         public async Task<IActionResult> Create()
         {
-            ViewData["LeaderId"] = new SelectList(await _serviceProviders.UserService.GetAllAsync(), "UserId", "Email");
+            var leaders = await _serviceProviders.UserService.GetLeadersAsync();
+            if (!leaders.Any())
+            {
+                ViewBag.LeaderError = "No active leaders";
+            }
+            ViewData["LeaderId"] = new SelectList(leaders, "UserId", "Email");
             return View();
         }
 
@@ -74,7 +74,7 @@ namespace ClubManagementMVC.Controllers
                 await _serviceProviders.ClubService.CreateAsync(club);
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["LeaderId"] = new SelectList(await _serviceProviders.UserService.GetAllAsync(), "UserId", "Email", club.LeaderId);
+            ViewData["LeaderId"] = new SelectList(await _serviceProviders.UserService.GetLeadersAsync(), "UserId", "Email", club.LeaderId);
             return View(club);
         }
 
@@ -94,7 +94,12 @@ namespace ClubManagementMVC.Controllers
 
             var updateRequest = _mapper.Map<UpdateClubRequestDTO>(club);
 
-            ViewData["LeaderId"] = new SelectList(await _serviceProviders.UserService.GetAllAsync(), "UserId", "Email", club.LeaderId);
+            var leaders = await _serviceProviders.UserService.GetLeadersAsync();
+            if (!leaders.Any())
+            {
+                ViewBag.LeaderError = "No active leaders";
+            }
+            ViewData["LeaderId"] = new SelectList(leaders, "UserId", "Email", club.LeaderId);
             return View(updateRequest);
         }
 
@@ -129,7 +134,7 @@ namespace ClubManagementMVC.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["LeaderId"] = new SelectList(await _serviceProviders.UserService.GetAllAsync(), "UserId", "Email", club.LeaderId);
+            ViewData["LeaderId"] = new SelectList(await _serviceProviders.UserService.GetLeadersAsync(), "UserId", "Email", club.LeaderId);
             return View(club);
         }
 
