@@ -27,7 +27,7 @@ namespace ClubManagement.Repository.Repositories
         public async Task<List<User>> GetLeadersAsync()
         {
             return await _context.Users
-                .Where(u => u.Role == "Admin")
+                .Where(u => u.Role == "ClubManager")
                 .ToListAsync();
         }
     }
