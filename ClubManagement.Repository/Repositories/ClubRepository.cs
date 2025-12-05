@@ -24,5 +24,19 @@ namespace ClubManagement.Repository.Repositories
         {
             return await _context.Clubs.AnyAsync(c => c.ClubName == name);
         }
+
+        public async Task<List<Club>> GetAllAsync()
+        {
+            return await _context.Clubs
+                .Include(c => c.Leader)
+                .ToListAsync();
+        }
+
+        public async Task<Club> GetByIdAsync(int id)
+        {
+            return await _context.Clubs
+                .Include(c => c.Leader)
+                .FirstOrDefaultAsync(c => c.ClubId == id);
+        }
     }
 }

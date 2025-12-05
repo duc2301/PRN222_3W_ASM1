@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ClubManagement.Service.DTOs.RequestDTOs.Activity;
 
 namespace ClubManagement.Service
 {
@@ -13,14 +14,25 @@ namespace ClubManagement.Service
     {
         public MappingProfile()
         {
+            // Club mappings
             CreateMap<Club, ClubResponseDTO>().ReverseMap();
             CreateMap<Club, CreateClubRequestDTO>().ReverseMap();
             CreateMap<Club, UpdateClubRequestDTO>().ReverseMap();
             CreateMap<ClubResponseDTO, CreateClubRequestDTO>().ReverseMap();
             CreateMap<ClubResponseDTO, UpdateClubRequestDTO>().ReverseMap();
+            
+            // User mappings
             CreateMap<User, UserResponseDTO>().ReverseMap();
             CreateMap<JoinRequest, JoinRequestResponseDTO>();
 
+            // Activity mappings
+            CreateMap<Activity, ActivityResponseDTO>().ReverseMap();
+            CreateMap<Activity, ActivityCreateDTO>().ReverseMap();
+            CreateMap<Activity, ActivityUpdateDTO>().ReverseMap();
+            
+            // ActivityParticipant mappings
+            CreateMap<ActivityParticipant, ActivityParticipantResponseDTO>().ReverseMap();
+            
             // Map phức tạp (Khác tên hoặc lấy dữ liệu từ bảng khác)
             //CreateMap<Club, ClubResponseDTO>()
             //    .ForMember(dest => dest.LeaderName, 
