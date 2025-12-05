@@ -2,6 +2,7 @@
 using ClubManagement.Service.DTOs.RequestDTOs;
 using ClubManagement.Service.DTOs.ResponseDTOs;
 using ClubManagement.Service.ServiceProviders.Interface;
+using ClubManagement.Service.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -9,23 +10,20 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ClubManagementMVC.Controllers
 {
-    [Authorize(Roles = "Admin,ClubManager")]
     public class ClubsController : Controller
     {
         private readonly IServiceProviders _serviceProviders;
         private readonly IMapper _mapper;
-
-        public ClubsController(IServiceProviders serviceProviders, IMapper mapper)
+        private readonly IMembershipService _membershipService;
+        public ClubsController(IServiceProviders serviceProviders, IMapper mapper, IMembershipService membershipService)
         {
             _serviceProviders = serviceProviders;
             _mapper = mapper;
+            _membershipService = membershipService;
         }
 
-
-
-
-
         // GET: Clubs
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<List<ClubResponseDTO>>> Index()
         {
             var clubList = await _serviceProviders.ClubService.GetAllAsync();
@@ -49,27 +47,25 @@ namespace ClubManagementMVC.Controllers
                     .ToList();
             }
 
-            return View(clubList);
-        }
-
-        // GET: Clubs/Details/5
-        public async Task<ActionResult> Details(int? id)
+        // GET: Clubs/Details/5 + search + phân trang
+        [Authorize(Roles = "Admin,ClubManager")]
+        public async Task<ActionResult> Details(int id, string? search, string? roleFilter, string? statusFilter, int page = 1)
         {
-            if (id == null)
+            const int pageSize = 10;
+
+            var viewModel = await _serviceProviders.ClubService
+                .GetMembersPageAsync(id, search, roleFilter, statusFilter, page, pageSize);
+
+            if (viewModel == null)
             {
                 return NotFound();
             }
 
-            var club = await _serviceProviders.ClubService.GetByIdAsync(id.Value);
-            if (club == null)
-            {
-                return NotFound();
-            }
-
-            return View(club);
+            return View(viewModel);
         }
 
         // GET: Clubs/Create
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create()
         {
             var leaders = await _serviceProviders.UserService.GetLeadersAsync();
@@ -82,8 +78,6 @@ namespace ClubManagementMVC.Controllers
         }
 
         // POST: Clubs/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
@@ -99,13 +93,9 @@ namespace ClubManagementMVC.Controllers
         }
 
         // GET: Clubs/Edit/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
             var club = await _serviceProviders.ClubService.GetByIdAsync(id);
             if (club == null)
             {
@@ -137,10 +127,9 @@ namespace ClubManagementMVC.Controllers
         }
 
         // POST: Clubs/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin,ClubManager")]
         public async Task<IActionResult> Edit(int id, [Bind("ClubId,ClubName,Description,CreatedAt,LeaderId")] UpdateClubRequestDTO club)
         {
             if (id != club.ClubId)
@@ -189,11 +178,6 @@ namespace ClubManagementMVC.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
             var club = await _serviceProviders.ClubService.GetByIdAsync(id);
             if (club == null)
             {
@@ -222,5 +206,41 @@ namespace ClubManagementMVC.Controllers
             var club = _serviceProviders.ClubService.GetByIdAsync(id).Result;
             return club != null;
         }
+
+        [Authorize(Roles = "Admin,ClubManager")]
+        public async Task<IActionResult> MyClubs()
+        {
+            var allUsers = await _serviceProviders.UserService.GetAllAsync();
+            var current = allUsers.FirstOrDefault(u => u.Username == User.Identity.Name);
+
+            if (current == null)
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            var allClubs = await _serviceProviders.ClubService.GetAllAsync();
+            var myClubs = allClubs.Where(c => c.LeaderId == current.UserId).ToList();
+
+            return View(myClubs);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin,ClubManager")]
+        public async Task<IActionResult> UpdateMember(UpdateMemberRequestDTO model)
+        {
+            if (!ModelState.IsValid)
+            {
+                // Nếu muốn hiển thị lỗi đẹp hơn có thể load lại Details,
+                // tạm thời redirect thẳng cho đơn giản.
+                return RedirectToAction("Details", new { id = model.ClubId });
+            }
+
+            await _membershipService.UpdateMemberAsync(model);
+
+            // Quay lại trang chi tiết CLB, tab Thành viên
+            return RedirectToAction("Details", new { id = model.ClubId });
+        }
+
     }
 }

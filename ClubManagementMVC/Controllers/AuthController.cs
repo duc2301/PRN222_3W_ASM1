@@ -54,7 +54,22 @@ namespace ClubManagementMVC.Controllers
                     new ClaimsPrincipal(claimsIdentity),
                     authProperties);
 
-                return RedirectToAction("Index", "Home");
+
+
+                if (user.Role.Equals("Admin", StringComparison.OrdinalIgnoreCase))
+                {
+                    return RedirectToAction("Index", "Clubs");
+                }
+                else if (user.Role.Equals("ClubManager", StringComparison.OrdinalIgnoreCase)
+                      || user.Role.Equals("ClubLeader", StringComparison.OrdinalIgnoreCase)) 
+                {
+                    return RedirectToAction("MyClubs", "Clubs");
+                }
+                else
+                {
+                    return RedirectToAction("Index", "Home");
+                }
+
             }
 
             return View(loginDto);
@@ -65,6 +80,13 @@ namespace ClubManagementMVC.Controllers
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Login", "Auth");
+        }
+
+        [HttpGet]
+        public IActionResult AccessDenied(string returnUrl = null)
+        {
+            ViewBag.ReturnUrl = returnUrl;
+            return View();
         }
 
     }

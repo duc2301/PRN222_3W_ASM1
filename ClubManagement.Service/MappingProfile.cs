@@ -40,6 +40,11 @@ namespace ClubManagement.Service
 
             // Map cho Create/Update (Request DTO)             
             // CreateMap<ClubCreateDTO, Club>();
+
+            CreateMap<Membership, ClubMemberListItemDTO>()
+               .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.User.FullName))
+               .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
+               .ForMember(dest => dest.Department, opt => opt.MapFrom(src => src.User.Department));
         }
     }
 }
