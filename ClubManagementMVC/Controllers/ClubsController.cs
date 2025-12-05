@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ClubManagementMVC.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,ClubManager")]
     public class ClubsController : Controller
     {
         private readonly IServiceProviders _serviceProviders;
@@ -28,9 +28,28 @@ namespace ClubManagementMVC.Controllers
         // GET: Clubs
         public async Task<ActionResult<List<ClubResponseDTO>>> Index()
         {
-            var ClubList = await _serviceProviders.ClubService.GetAllAsync();
+            var clubList = await _serviceProviders.ClubService.GetAllAsync();
 
-            return View(ClubList);
+            var currentUsername = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
+
+            // If ClubManager, only show clubs where they are the leader
+            if (User.IsInRole("ClubManager"))
+            {
+                clubList = clubList
+                    .Where(c => c.Leader != null && c.Leader.Username == currentUsername)
+                    .OrderBy(c => c.ClubName)
+                    .ToList();
+            }
+            else
+            {
+                // Admin: sort with their own clubs first, then others
+                clubList = clubList
+                    .OrderByDescending(c => c.Leader != null && c.Leader.Username == currentUsername)
+                    .ThenBy(c => c.ClubName)
+                    .ToList();
+            }
+
+            return View(clubList);
         }
 
         // GET: Clubs/Details/5
@@ -66,6 +85,7 @@ namespace ClubManagementMVC.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("ClubId,ClubName,Description,CreatedAt,LeaderId")] CreateClubRequestDTO club)
         {
@@ -92,15 +112,28 @@ namespace ClubManagementMVC.Controllers
                 return NotFound();
             }
 
-            var updateRequest = _mapper.Map<UpdateClubRequestDTO>(club);
+            // Only allow ClubManager to edit their own club
+            if (User.IsInRole("ClubManager"))
+            {
+                var currentUsername = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
+                if (club.Leader == null || club.Leader.Username != currentUsername)
+                {
+                    ViewBag.LeaderError = "You are not the owner of this club and cannot edit it.";
+                    var updateRequest = _mapper.Map<UpdateClubRequestDTO>(club);
+                    var leaders = await _serviceProviders.UserService.GetLeadersAsync();
+                    ViewData["LeaderId"] = new SelectList(leaders, "UserId", "Email", club.LeaderId);
+                    return View(updateRequest);
+                }
+            }
 
-            var leaders = await _serviceProviders.UserService.GetLeadersAsync();
-            if (!leaders.Any())
+            var updateRequestValid = _mapper.Map<UpdateClubRequestDTO>(club);
+            var leadersValid = await _serviceProviders.UserService.GetLeadersAsync();
+            if (!leadersValid.Any())
             {
                 ViewBag.LeaderError = "No active leaders";
             }
-            ViewData["LeaderId"] = new SelectList(leaders, "UserId", "Email", club.LeaderId);
-            return View(updateRequest);
+            ViewData["LeaderId"] = new SelectList(leadersValid, "UserId", "Email", club.LeaderId);
+            return View(updateRequestValid);
         }
 
         // POST: Clubs/Edit/5
@@ -113,6 +146,20 @@ namespace ClubManagementMVC.Controllers
             if (id != club.ClubId)
             {
                 return NotFound();
+            }
+
+            var clubEntity = await _serviceProviders.ClubService.GetByIdAsync(id);
+            if (User.IsInRole("ClubManager"))
+            {
+                var currentUsername = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
+                if (clubEntity == null || clubEntity.Leader == null || clubEntity.Leader.Username != currentUsername)
+                {
+                    ViewBag.LeaderError = "You are not the owner of this club and cannot edit it.";
+                    ViewData["LeaderId"] = new SelectList(await _serviceProviders.UserService.GetLeadersAsync(), "UserId", "Email", club.LeaderId);
+                    return View(club);
+                }
+                // Prevent ClubManager from changing LeaderId
+                club.LeaderId = clubEntity.Leader.UserId;
             }
 
             if (ModelState.IsValid)
@@ -139,6 +186,7 @@ namespace ClubManagementMVC.Controllers
         }
 
         // GET: Clubs/Delete/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             if (id == null)
@@ -156,6 +204,7 @@ namespace ClubManagementMVC.Controllers
         }
 
         // POST: Clubs/Delete/5
+        [Authorize(Roles = "Admin")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)

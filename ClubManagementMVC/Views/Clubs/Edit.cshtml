@@ -1,9 +1,13 @@
 ﻿@using ClubManagement.Service.DTOs.RequestDTOs
+@using System.Security.Claims
 @model UpdateClubRequestDTO
-
 @{
     ViewData["Title"] = "Edit";
 }
+@{
+    var isClubManager = User.IsInRole("ClubManager");
+}
+
 
 <h1>Edit</h1>
 
@@ -30,9 +34,16 @@
                 <span asp-validation-for="CreatedAt" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="LeaderId" class="control-label"></label>
-                <select asp-for="LeaderId" class="form-control" asp-items="ViewBag.LeaderId"></select>
-                <span asp-validation-for="LeaderId" class="text-danger"></span>
+                <label for="LeaderId">Leader</label>
+                @if (isClubManager)
+                {
+                    <input type="text" class="form-control" value="@Model.LeaderId" readonly />
+                    <input type="hidden" name="LeaderId" value="@Model.LeaderId" />
+                }
+                else
+                {
+                    @Html.DropDownListFor(m => m.LeaderId, (SelectList)ViewData["LeaderId"], "Select Leader", new { @class = "form-control" })
+                }
             </div>
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
