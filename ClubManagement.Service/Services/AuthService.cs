@@ -30,5 +30,7 @@ namespace ClubManagement.Service.Services
         {
             throw new NotImplementedException();
         }
+
     }
+
 }

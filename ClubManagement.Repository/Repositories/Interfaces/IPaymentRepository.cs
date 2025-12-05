@@ -10,5 +10,13 @@ namespace ClubManagement.Repository.Repositories.Interfaces
 {
     public interface IPaymentRepository : IGenericRepository<Payment>
     {
+
+        Task<List<Payment>> GetByUserAsync(int userId);
+        Task<List<Payment>> GetByFeeAsync(int feeId);
+
+        Task<bool> HasPaidAsync(int userId, int feeId);
+        Task<List<Payment>> GetAllWithDetailsAsync();
+        Task<Payment?> GetByIdAsync(int id);
+
     }
 }

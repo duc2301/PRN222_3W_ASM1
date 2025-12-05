@@ -6,5 +6,6 @@ namespace ClubManagement.Service.Services.Interfaces
     {
         Task<List<UserResponseDTO>> GetAllAsync();
         Task<List<UserResponseDTO>> GetLeadersAsync();
+        Task<UserResponseDTO?> GetByUsernameAsync(string username);
     }
 }

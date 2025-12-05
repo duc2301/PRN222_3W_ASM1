@@ -1,0 +1,18 @@
+﻿@model ClubManagement.Service.DTOs.RequestDTOs.ApproveJoinRequestDTO
+
+@{
+    ViewData["Title"] = "Approve Request";
+}
+
+<h2>Approve Join Request</h2>
+
+<form asp-action="ApproveConfirmed" method="post">
+    <input type="hidden" asp-for="RequestId" />
+
+    <div class="form-group">
+        <label>Leader (Approver)</label>
+        <select asp-for="LeaderId" class="form-control" asp-items="ViewBag.LeaderId"></select>
+    </div>
+
+    <button class="btn btn-success">Approve</button>
+</form>

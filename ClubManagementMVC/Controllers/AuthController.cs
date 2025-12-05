@@ -66,5 +66,6 @@ namespace ClubManagementMVC.Controllers
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Login", "Auth");
         }
+
     }
 }

@@ -1,0 +1,25 @@
+﻿@model IEnumerable<ClubManagement.Repository.Models.Payment>
+
+<h2>My Payments</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Fee</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td>@p.FeeId</td>
+                <td>@p.Amount</td>
+                <td>@p.Status</td>
+                <td>@p.PaymentDate</td>
+            </tr>
+        }
+    </tbody>
+</table>

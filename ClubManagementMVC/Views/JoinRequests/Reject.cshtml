@@ -1,0 +1,18 @@
+﻿@model ClubManagement.Service.DTOs.RequestDTOs.RejectJoinRequestDTO
+
+@{
+    ViewData["Title"] = "Reject Request";
+}
+
+<h2>Reject Join Request</h2>
+
+<form asp-action="RejectConfirmed" method="post">
+    <input type="hidden" asp-for="RequestId" />
+
+    <div class="form-group">
+        <label>Reason</label>
+        <textarea asp-for="Reason" class="form-control"></textarea>
+    </div>
+
+    <button class="btn btn-danger">Reject</button>
+</form>

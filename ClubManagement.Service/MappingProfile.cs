@@ -23,6 +23,7 @@ namespace ClubManagement.Service
             
             // User mappings
             CreateMap<User, UserResponseDTO>().ReverseMap();
+            CreateMap<JoinRequest, JoinRequestResponseDTO>();
 
             // Activity mappings
             CreateMap<Activity, ActivityResponseDTO>().ReverseMap();
