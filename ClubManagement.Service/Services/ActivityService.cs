@@ -54,8 +54,17 @@ namespace ClubManagement.Service.Services
 
         public async Task<ActivityResponseDTO> DeleteAsync(int id)
         {
-            var activity = await _unitOfWork.ActivityRepository.GetByIdAsync(id);
+            var activity = await _activityRepository.GetActivityWithRelationsById(id);            
+            if (activity == null)
+            {
+                throw new Exception($"Activity with ID {id} not found");
+            }
+            foreach (var participant in activity.ActivityParticipants.ToList())
+            {
+                _unitOfWork.ActivityParticipantRepository.Remove(participant);
+            }
             _unitOfWork.ActivityRepository.Remove(activity);
+            
             await _unitOfWork.SaveChangesAsync();
             return _mapper.Map<ActivityResponseDTO>(activity);
         }

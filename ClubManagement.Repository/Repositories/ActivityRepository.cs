@@ -21,6 +21,7 @@ namespace ClubManagement.Repository.Repositories
         {
             return await _context.Set<Activity>()
                 .Include(a => a.Club)
+                .Include(a => a.ActivityParticipants)
                 .ToListAsync();
         }
         
