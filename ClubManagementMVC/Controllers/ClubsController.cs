@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace ClubManagementMVC.Controllers
 {
@@ -15,7 +16,11 @@ namespace ClubManagementMVC.Controllers
         private readonly IServiceProviders _serviceProviders;
         private readonly IMapper _mapper;
         private readonly IMembershipService _membershipService;
-        public ClubsController(IServiceProviders serviceProviders, IMapper mapper, IMembershipService membershipService)
+
+        public ClubsController(
+            IServiceProviders serviceProviders,
+            IMapper mapper,
+            IMembershipService membershipService)
         {
             _serviceProviders = serviceProviders;
             _mapper = mapper;
@@ -23,33 +28,42 @@ namespace ClubManagementMVC.Controllers
         }
 
         // GET: Clubs
-        [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<List<ClubResponseDTO>>> Index()
+        // Admin: xem tất cả, ưu tiên CLB mình làm leader lên trước
+        // ClubManager: chỉ thấy các CLB mình quản lý
+        [Authorize(Roles = "Admin,ClubManager")]
+        public async Task<IActionResult> Index()
         {
             var clubList = await _serviceProviders.ClubService.GetAllAsync();
+            var currentUsername = User.FindFirst(ClaimTypes.Name)?.Value;
 
-            var currentUsername = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
-
-            // If ClubManager, only show clubs where they are the leader
             if (User.IsInRole("ClubManager"))
             {
+                // ClubManager: chỉ thấy CLB của mình
                 clubList = clubList
                     .Where(c => c.Leader != null && c.Leader.Username == currentUsername)
                     .OrderBy(c => c.ClubName)
                     .ToList();
             }
-            else
+            else if (User.IsInRole("Admin"))
             {
-                // Admin: sort with their own clubs first, then others
+                // Admin: ưu tiên CLB mình làm leader, sau đó mới tới CLB khác
                 clubList = clubList
                     .OrderByDescending(c => c.Leader != null && c.Leader.Username == currentUsername)
                     .ThenBy(c => c.ClubName)
                     .ToList();
             }
 
+            return View(clubList);
+        }
+
         // GET: Clubs/Details/5 + search + phân trang
         [Authorize(Roles = "Admin,ClubManager")]
-        public async Task<ActionResult> Details(int id, string? search, string? roleFilter, string? statusFilter, int page = 1)
+        public async Task<IActionResult> Details(
+            int id,
+            string? search,
+            string? roleFilter,
+            string? statusFilter,
+            int page = 1)
         {
             const int pageSize = 10;
 
@@ -73,6 +87,7 @@ namespace ClubManagementMVC.Controllers
             {
                 ViewBag.LeaderError = "No active leaders";
             }
+
             ViewData["LeaderId"] = new SelectList(leaders, "UserId", "Email");
             return View();
         }
@@ -81,19 +96,26 @@ namespace ClubManagementMVC.Controllers
         [HttpPost]
         [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ClubId,ClubName,Description,CreatedAt,LeaderId")] CreateClubRequestDTO club)
+        public async Task<IActionResult> Create(
+            [Bind("ClubId,ClubName,Description,CreatedAt,LeaderId")] CreateClubRequestDTO club)
         {
             if (ModelState.IsValid)
             {
                 await _serviceProviders.ClubService.CreateAsync(club);
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["LeaderId"] = new SelectList(await _serviceProviders.UserService.GetLeadersAsync(), "UserId", "Email", club.LeaderId);
+
+            ViewData["LeaderId"] = new SelectList(
+                await _serviceProviders.UserService.GetLeadersAsync(),
+                "UserId",
+                "Email",
+                club.LeaderId);
+
             return View(club);
         }
 
         // GET: Clubs/Edit/5
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,ClubManager")]
         public async Task<IActionResult> Edit(int id)
         {
             var club = await _serviceProviders.ClubService.GetByIdAsync(id);
@@ -102,35 +124,39 @@ namespace ClubManagementMVC.Controllers
                 return NotFound();
             }
 
-            // Only allow ClubManager to edit their own club
+            // ClubManager chỉ được sửa CLB của chính mình
             if (User.IsInRole("ClubManager"))
             {
-                var currentUsername = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
+                var currentUsername = User.FindFirst(ClaimTypes.Name)?.Value;
                 if (club.Leader == null || club.Leader.Username != currentUsername)
                 {
                     ViewBag.LeaderError = "You are not the owner of this club and cannot edit it.";
-                    var updateRequest = _mapper.Map<UpdateClubRequestDTO>(club);
-                    var leaders = await _serviceProviders.UserService.GetLeadersAsync();
-                    ViewData["LeaderId"] = new SelectList(leaders, "UserId", "Email", club.LeaderId);
-                    return View(updateRequest);
+
+                    var deniedModel = _mapper.Map<UpdateClubRequestDTO>(club);
+                    var leadersDenied = await _serviceProviders.UserService.GetLeadersAsync();
+                    ViewData["LeaderId"] = new SelectList(leadersDenied, "UserId", "Email", club.LeaderId);
+                    return View(deniedModel);
                 }
             }
 
-            var updateRequestValid = _mapper.Map<UpdateClubRequestDTO>(club);
-            var leadersValid = await _serviceProviders.UserService.GetLeadersAsync();
-            if (!leadersValid.Any())
+            var updateRequest = _mapper.Map<UpdateClubRequestDTO>(club);
+            var leaders = await _serviceProviders.UserService.GetLeadersAsync();
+            if (!leaders.Any())
             {
                 ViewBag.LeaderError = "No active leaders";
             }
-            ViewData["LeaderId"] = new SelectList(leadersValid, "UserId", "Email", club.LeaderId);
-            return View(updateRequestValid);
+
+            ViewData["LeaderId"] = new SelectList(leaders, "UserId", "Email", club.LeaderId);
+            return View(updateRequest);
         }
 
         // POST: Clubs/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin,ClubManager")]
-        public async Task<IActionResult> Edit(int id, [Bind("ClubId,ClubName,Description,CreatedAt,LeaderId")] UpdateClubRequestDTO club)
+        public async Task<IActionResult> Edit(
+            int id,
+            [Bind("ClubId,ClubName,Description,CreatedAt,LeaderId")] UpdateClubRequestDTO club)
         {
             if (id != club.ClubId)
             {
@@ -138,16 +164,26 @@ namespace ClubManagementMVC.Controllers
             }
 
             var clubEntity = await _serviceProviders.ClubService.GetByIdAsync(id);
+            if (clubEntity == null)
+            {
+                return NotFound();
+            }
+
             if (User.IsInRole("ClubManager"))
             {
-                var currentUsername = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
-                if (clubEntity == null || clubEntity.Leader == null || clubEntity.Leader.Username != currentUsername)
+                var currentUsername = User.FindFirst(ClaimTypes.Name)?.Value;
+                if (clubEntity.Leader == null || clubEntity.Leader.Username != currentUsername)
                 {
                     ViewBag.LeaderError = "You are not the owner of this club and cannot edit it.";
-                    ViewData["LeaderId"] = new SelectList(await _serviceProviders.UserService.GetLeadersAsync(), "UserId", "Email", club.LeaderId);
+                    ViewData["LeaderId"] = new SelectList(
+                        await _serviceProviders.UserService.GetLeadersAsync(),
+                        "UserId",
+                        "Email",
+                        club.LeaderId);
                     return View(club);
                 }
-                // Prevent ClubManager from changing LeaderId
+
+                // ClubManager không được đổi Leader
                 club.LeaderId = clubEntity.Leader.UserId;
             }
 
@@ -163,14 +199,19 @@ namespace ClubManagementMVC.Controllers
                     {
                         return NotFound();
                     }
-                    else
-                    {
-                        throw;
-                    }
+
+                    throw;
                 }
+
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["LeaderId"] = new SelectList(await _serviceProviders.UserService.GetLeadersAsync(), "UserId", "Email", club.LeaderId);
+
+            ViewData["LeaderId"] = new SelectList(
+                await _serviceProviders.UserService.GetLeadersAsync(),
+                "UserId",
+                "Email",
+                club.LeaderId);
+
             return View(club);
         }
 
@@ -198,6 +239,7 @@ namespace ClubManagementMVC.Controllers
             {
                 await _serviceProviders.ClubService.DeleteAsync(id);
             }
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -211,7 +253,7 @@ namespace ClubManagementMVC.Controllers
         public async Task<IActionResult> MyClubs()
         {
             var allUsers = await _serviceProviders.UserService.GetAllAsync();
-            var current = allUsers.FirstOrDefault(u => u.Username == User.Identity.Name);
+            var current = allUsers.FirstOrDefault(u => u.Username == User.Identity!.Name);
 
             if (current == null)
             {
@@ -231,16 +273,11 @@ namespace ClubManagementMVC.Controllers
         {
             if (!ModelState.IsValid)
             {
-                // Nếu muốn hiển thị lỗi đẹp hơn có thể load lại Details,
-                // tạm thời redirect thẳng cho đơn giản.
                 return RedirectToAction("Details", new { id = model.ClubId });
             }
 
             await _membershipService.UpdateMemberAsync(model);
-
-            // Quay lại trang chi tiết CLB, tab Thành viên
             return RedirectToAction("Details", new { id = model.ClubId });
         }
-
     }
 }
