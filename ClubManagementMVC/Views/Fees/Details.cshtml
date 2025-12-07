@@ -7,6 +7,22 @@
 }
 
 <div class="container-fluid py-4">
+    @if (TempData["msg"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>@TempData["msg"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>@TempData["error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="fw-bold text-primary"><i class="bi bi-info-circle me-2"></i>Chi tiết Phí</h2>
@@ -74,10 +90,10 @@
                     }
                     else
                     {
-                        var paidCount = payments.Count(p => p.Status == "Paid");
-                        var pendingCount = payments.Count(p => p.Status == "Pending");
-                        var unpaidCount = payments.Count(p => p.Status == "Unpaid");
-                        var expiredCount = payments.Count(p => p.Status == "Expired");
+                        var paidCount = payments.Count(p => string.Equals(p.Status?.Trim(), "Paid", StringComparison.OrdinalIgnoreCase));
+                        var pendingCount = payments.Count(p => string.Equals(p.Status?.Trim(), "Pending", StringComparison.OrdinalIgnoreCase));
+                        var unpaidCount = payments.Count(p => string.Equals(p.Status?.Trim(), "Unpaid", StringComparison.OrdinalIgnoreCase));
+                        var expiredCount = payments.Count(p => string.Equals(p.Status?.Trim(), "Expired", StringComparison.OrdinalIgnoreCase));
                         
                         <div class="mb-3">
                             <div class="row g-2">
@@ -120,31 +136,32 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach (var payment in payments.OrderByDescending(p => p.PaymentDate).ThenBy(p => p.Status))
+                                    @foreach (var payment in payments.OrderByDescending(p => p.PaymentDate ?? DateTime.MinValue).ThenBy(p => p.Status))
                                     {
+                                        var status = payment.Status?.Trim() ?? "";
                                         <tr>
-                                            <td class="fw-bold">@payment.User?.FullName</td>
+                                            <td class="fw-bold">@(payment.User?.FullName ?? "N/A")</td>
                                             <td class="fw-bold text-success">@payment.Amount.ToString("N0") đ</td>
                                             <td>
-                                                @if (payment.Status == "Paid")
+                                                @if (string.Equals(status, "Paid", StringComparison.OrdinalIgnoreCase))
                                                 {
                                                     <span class="badge bg-success">
                                                         <i class="bi bi-check-circle me-1"></i>Đã xác nhận
                                                     </span>
                                                 }
-                                                else if (payment.Status == "Pending")
+                                                else if (string.Equals(status, "Pending", StringComparison.OrdinalIgnoreCase))
                                                 {
                                                     <span class="badge bg-info text-white">
                                                         <i class="bi bi-hourglass-split me-1"></i>Đã đóng, chờ xác nhận
                                                     </span>
                                                 }
-                                                else if (payment.Status == "Unpaid")
+                                                else if (string.Equals(status, "Unpaid", StringComparison.OrdinalIgnoreCase))
                                                 {
                                                     <span class="badge bg-warning text-dark">
                                                         <i class="bi bi-clock me-1"></i>Chưa đóng
                                                     </span>
                                                 }
-                                                else if (payment.Status == "Expired")
+                                                else if (string.Equals(status, "Expired", StringComparison.OrdinalIgnoreCase))
                                                 {
                                                     <span class="badge bg-danger">
                                                         <i class="bi bi-exclamation-triangle me-1"></i>Quá hạn
@@ -152,7 +169,7 @@
                                                 }
                                                 else
                                                 {
-                                                    <span class="badge bg-secondary">@payment.Status</span>
+                                                    <span class="badge bg-secondary">@(string.IsNullOrEmpty(status) ? "N/A" : payment.Status)</span>
                                                 }
                                             </td>
                                             <td>
@@ -166,7 +183,7 @@
                                                 }
                                             </td>
                                             <td>
-                                                @if (payment.Status == "Pending")
+                                                @if (string.Equals(status, "Pending", StringComparison.OrdinalIgnoreCase))
                                                 {
                                                     <form asp-controller="Payment" asp-action="ConfirmPayment" method="post" style="display: inline;">
                                                         @Html.AntiForgeryToken()
@@ -176,13 +193,13 @@
                                                         </button>
                                                     </form>
                                                 }
-                                                else if (payment.Status == "Paid")
+                                                else if (string.Equals(status, "Paid", StringComparison.OrdinalIgnoreCase))
                                                 {
                                                     <span class="badge bg-success">
                                                         <i class="bi bi-check-circle me-1"></i>Đã xác nhận
                                                     </span>
                                                 }
-                                                else if (payment.Status == "Unpaid" || payment.Status == "Expired")
+                                                else if (string.Equals(status, "Unpaid", StringComparison.OrdinalIgnoreCase) || string.Equals(status, "Expired", StringComparison.OrdinalIgnoreCase))
                                                 {
                                                     <span class="text-muted">-</span>
                                                 }

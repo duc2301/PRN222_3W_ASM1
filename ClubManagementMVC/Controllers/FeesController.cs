@@ -114,9 +114,13 @@ namespace ClubManagementMVC.Controllers
                 }
             }
 
-            // Lấy danh sách payments cho fee này
+            // Lấy danh sách payments cho fee này với đầy đủ thông tin User và Fee
             var allPayments = await _serviceProviders.PaymentService.GetAllAsync();
-            var payments = allPayments.Where(p => p.FeeId == id).ToList();
+            var payments = allPayments
+                .Where(p => p.FeeId == id)
+                .OrderByDescending(p => p.PaymentDate)
+                .ThenBy(p => p.Status == "Pending" ? 0 : (p.Status == "Unpaid" ? 1 : (p.Status == "Paid" ? 2 : 3)))
+                .ToList();
             ViewBag.Payments = payments;
 
             return View(fee);

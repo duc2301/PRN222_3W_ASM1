@@ -175,7 +175,9 @@ namespace ClubManagementMVC.Controllers
             var referer = Request.Headers["Referer"].ToString();
             if (referer.Contains("/Fees/Details"))
             {
-                return Redirect(referer);
+                // Lấy feeId từ payment để redirect về đúng trang Details
+                var feeId = payment.FeeId;
+                return RedirectToAction("Details", "Fees", new { id = feeId });
             }
 
             return RedirectToAction("Index");

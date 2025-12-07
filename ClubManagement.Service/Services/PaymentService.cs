@@ -76,7 +76,7 @@ namespace ClubManagement.Service.Services
             await _context.SaveChangesAsync();
         }
 
-        // Student xác nhận đóng phí (chuyển từ Unpaid sang Paid - tự động xác nhận)
+        // Student xác nhận đóng phí (chuyển từ Unpaid sang Pending - chờ ClubManager xác nhận)
         public async Task RequestPaymentAsync(int paymentId)
         {
             var payment = await _context.Payments
@@ -92,8 +92,11 @@ namespace ClubManagement.Service.Services
             if (payment.Status == "Expired")
                 throw new Exception("Payment has expired");
 
-            // Chuyển từ Unpaid sang Paid (tự động xác nhận khi student đóng)
-            payment.Status = "Paid";
+            if (payment.Status == "Pending")
+                throw new Exception("Payment is already pending confirmation");
+
+            // Chuyển từ Unpaid sang Pending (chờ ClubManager xác nhận)
+            payment.Status = "Pending";
             payment.PaymentDate = DateTime.Now;
 
             await _context.SaveChangesAsync();
