@@ -37,7 +37,11 @@ namespace ClubManagement.Service.Services
             {
                 UserId = user.UserId,
                 Username = user.Username,
-                Email = user.Email
+                Email = user.Email,
+                CreatedAt = user.CreatedAt,
+                FullName = user.FullName,
+                Department = user.Department,
+                Phone = user.Phone                
             };
         }
     }
