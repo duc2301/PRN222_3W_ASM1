@@ -2,50 +2,59 @@
 @model CreateClubRequestDTO
 
 @{
-    ViewData["Title"] = "Create";
+    Layout = "~/Views/Shared/_ClubLayout.cshtml";
+    ViewData["Title"] = "Tạo CLB mới";
+    ViewData["HeaderTitle"] = "Tạo CLB mới";
+    ViewData["HeaderSubtitle"] = "Thêm câu lạc bộ mới vào hệ thống";
+    var leaderError = ViewBag.LeaderError as string;
 }
 
-<h1>Create</h1>
-
-<h4>Club</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="ClubName" class="control-label"></label>
-                <input asp-for="ClubName" class="form-control" />
-                <span asp-validation-for="ClubName" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Description" class="control-label"></label>
-                <input asp-for="Description" class="form-control" />
-                <span asp-validation-for="Description" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="LeaderId" class="control-label"></label>
-                <select asp-for="LeaderId" class ="form-control" asp-items="ViewBag.LeaderId"></select>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="h5 fw-semibold mb-1">Tạo CLB mới</h2>
+        <p class="text-muted mb-0" style="font-size: 14px;">
+            Nhập thông tin để tạo một câu lạc bộ mới.
+        </p>
     </div>
+    <a asp-action="MyClubs" class="btn btn-outline-primary">
+        <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách
+    </a>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
+@if (!string.IsNullOrEmpty(leaderError))
+{
+    <div class="alert alert-warning mb-3">@leaderError</div>
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <form asp-action="Create">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    <div class="mb-3">
+                        <label asp-for="ClubName" class="form-label fw-semibold"></label>
+                        <input asp-for="ClubName" class="form-control" />
+                        <span asp-validation-for="ClubName" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label fw-semibold"></label>
+                        <input asp-for="Description" class="form-control" />
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="LeaderId" class="form-label fw-semibold"></label>
+                        <select asp-for="LeaderId" class="form-select" asp-items="ViewBag.LeaderId"></select>
+                    </div>
+                    <div class="d-grid">
+                        <input type="submit" value="Tạo CLB" class="btn btn-primary fw-semibold" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}
-
-@{
-    var leaderError = ViewBag.LeaderError as string;
-}
-@if (!string.IsNullOrEmpty(leaderError))
-{
-    <div class="alert alert-warning">@leaderError</div>
 }
