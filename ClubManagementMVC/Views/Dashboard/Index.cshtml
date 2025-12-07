@@ -1,0 +1,454 @@
+@using ClubManagement.Service.DTOs.ResponseDTOs.Dashboard
+@model CompleteDashboardDTO
+
+@{
+    ViewData["Title"] = "Dashboard";
+    ViewData["HeaderTitle"] = "Thống kê tổng quan";
+    ViewData["HeaderSubtitle"] = "Báo cáo và phân tích hoạt động hệ thống";
+    Layout = "~/Views/Shared/_ClubLayout.cshtml";
+}
+
+<!-- Overview Stats Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card stat-primary">
+            <div class="stat-icon">
+                <i class="bi bi-building"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">@Model.Overview.TotalClubs</div>
+                <div class="stat-label">Tổng số CLB</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card stat-success">
+            <div class="stat-icon">
+                <i class="bi bi-people"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">@Model.Overview.TotalMembers</div>
+                <div class="stat-label">Thành viên</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card stat-info">
+            <div class="stat-icon">
+                <i class="bi bi-calendar-event"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">@Model.Overview.TotalActivities</div>
+                <div class="stat-label">Hoạt động</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card stat-warning">
+            <div class="stat-icon">
+                <i class="bi bi-clock-history"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">@Model.Overview.PendingJoinRequests</div>
+                <div class="stat-label">Đơn chờ duyệt</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 1 -->
+<div class="row g-4 mb-4">
+    <!-- Top Clubs Chart -->
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white border-0 py-3">
+                <h5 class="mb-0">
+                    <i class="bi bi-trophy text-warning me-2"></i>
+                    Top CLB có nhiều thành viên
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="topClubsChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activities Distribution -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white border-0 py-3">
+                <h5 class="mb-0">
+                    <i class="bi bi-pie-chart text-info me-2"></i>
+                    Phân bố hoạt động
+                </h5>
+            </div>
+            <div class="card-body d-flex align-items-center justify-content-center">
+                <canvas id="activitiesDistributionChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 2 -->
+<div class="row g-4 mb-4">
+    <!-- Financial Overview -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white border-0 py-3">
+                <h5 class="mb-0">
+                    <i class="bi bi-currency-dollar text-success me-2"></i>
+                    Tài chính
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="financial-item mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">Tổng doanh thu</span>
+                        <h4 class="mb-0 text-success">@Model.FinancialStats.TotalRevenue.ToString("N0") VNĐ</h4>
+                    </div>
+                </div>
+                
+                <div class="financial-item mb-3">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Đã thanh toán</span>
+                        <span class="fw-bold text-success">@Model.FinancialStats.PaidPaymentsCount</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        @{
+                            var total = Model.FinancialStats.PaidPaymentsCount + Model.FinancialStats.PendingPaymentsCount;
+                            var paidPercent = total > 0 ? (Model.FinancialStats.PaidPaymentsCount * 100.0 / total) : 0;
+                        }
+                        <div class="progress-bar bg-success" style="width: @paidPercent%"></div>
+                    </div>
+                </div>
+
+                <div class="financial-item">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Chờ thanh toán</span>
+                        <span class="fw-bold text-warning">@Model.FinancialStats.PendingPaymentsCount</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        @{
+                            var pendingPercent = total > 0 ? (Model.FinancialStats.PendingPaymentsCount * 100.0 / total) : 0;
+                        }
+                        <div class="progress-bar bg-warning" style="width: @pendingPercent%"></div>
+                    </div>
+                </div>
+
+                <canvas id="paymentStatusChart" class="mt-4"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Participation Stats -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white border-0 py-3">
+                <h5 class="mb-0">
+                    <i class="bi bi-person-check text-primary me-2"></i>
+                    Tham gia hoạt động
+                </h5>
+            </div>
+            <div class="card-body d-flex align-items-center justify-content-center">
+                <canvas id="participationChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Membership Status -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white border-0 py-3">
+                <h5 class="mb-0">
+                    <i class="bi bi-person-badge text-secondary me-2"></i>
+                    Trạng thái thành viên
+                </h5>
+            </div>
+            <div class="card-body d-flex align-items-center justify-content-center">
+                <canvas id="membershipStatusChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 3 -->
+<div class="row g-4 mb-4">
+    <!-- Monthly Join Trends -->
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white border-0 py-3">
+                <h5 class="mb-0">
+                    <i class="bi bi-graph-up text-info me-2"></i>
+                    Xu hướng gia nhập (6 tháng gần đây)
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="joinTrendsChart" height="80"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upcoming Activities -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white border-0 py-3">
+                <h5 class="mb-0">
+                    <i class="bi bi-calendar-week text-danger me-2"></i>
+                    Hoạt động sắp tới
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="upcoming-activities-list">
+                    @if (Model.ActivityStats.UpcomingActivities.Any())
+                    {
+                        @foreach (var activity in Model.ActivityStats.UpcomingActivities.Take(5))
+                        {
+                            <div class="activity-item">
+                                <div class="activity-date">
+                                    <div class="date-day">@activity.StartDate.Day</div>
+                                    <div class="date-month">Th@activity.StartDate.Month</div>
+                                </div>
+                                <div class="activity-info">
+                                    <div class="activity-name">@activity.ActivityName</div>
+                                    <div class="activity-club">
+                                        <i class="bi bi-building me-1"></i>@activity.ClubName
+                                    </div>
+                                    <div class="activity-time text-muted small">
+                                        <i class="bi bi-clock me-1"></i>@activity.StartDate.ToString("HH:mm")
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-4 text-muted">
+                            <i class="bi bi-calendar-x fs-1 mb-2 d-block"></i>
+                            Không có hoạt động sắp tới
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Unpaid Fees Table -->
+@if (Model.FinancialStats.UnpaidFees.Any())
+{
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0">
+                        <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+                        Danh sách chưa thanh toán
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Thành viên</th>
+                                    <th>CLB</th>
+                                    <th class="text-end">Số tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var unpaid in Model.FinancialStats.UnpaidFees)
+                                {
+                                    <tr>
+                                        <td>
+                                            <i class="bi bi-person-circle me-2 text-muted"></i>
+                                            @unpaid.FullName
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-light text-dark">@unpaid.ClubName</span>
+                                        </td>
+                                        <td class="text-end fw-bold text-danger">
+                                            @unpaid.Amount.ToString("N0") VNĐ
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="~/js/dashboard.js"></script>
+    <script>
+        // Pass server data to JavaScript with proper JSON options
+        window.dashboardData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model, new System.Text.Json.JsonSerializerOptions { 
+            PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+            WriteIndented = true
+        }));
+        
+        console.log('Dashboard Data:', window.dashboardData);
+        
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof initializeDashboard === 'function') {
+                initializeDashboard(window.dashboardData);
+            } else {
+                console.error('initializeDashboard function not found!');
+            }
+        });
+    </script>
+}
+
+<style>
+    /* Stat Cards */
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    }
+
+    .stat-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+    }
+
+    .stat-primary .stat-icon {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .stat-success .stat-icon {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+    }
+
+    .stat-info .stat-icon {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+    }
+
+    .stat-warning .stat-icon {
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        color: white;
+    }
+
+    .stat-value {
+        font-size: 32px;
+        font-weight: 700;
+        line-height: 1;
+        margin-bottom: 4px;
+    }
+
+    .stat-label {
+        font-size: 13px;
+        color: #6b7280;
+        font-weight: 500;
+    }
+
+    /* Upcoming Activities List */
+    .upcoming-activities-list {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .activity-item {
+        display: flex;
+        gap: 16px;
+        padding: 16px 20px;
+        border-bottom: 1px solid #f3f4f6;
+        transition: background 0.2s;
+    }
+
+    .activity-item:last-child {
+        border-bottom: none;
+    }
+
+    .activity-item:hover {
+        background: #f9fafb;
+    }
+
+    .activity-date {
+        flex-shrink: 0;
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: white;
+    }
+
+    .date-day {
+        font-size: 20px;
+        font-weight: 700;
+        line-height: 1;
+    }
+
+    .date-month {
+        font-size: 11px;
+        font-weight: 500;
+        opacity: 0.9;
+    }
+
+    .activity-info {
+        flex: 1;
+    }
+
+    .activity-name {
+        font-weight: 600;
+        margin-bottom: 4px;
+        color: #111827;
+    }
+
+    .activity-club {
+        font-size: 13px;
+        color: #6b7280;
+        margin-bottom: 2px;
+    }
+
+    .activity-time {
+        font-size: 12px;
+    }
+
+    /* Financial Items */
+    .financial-item {
+        padding-bottom: 16px;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .financial-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    /* Card styling */
+    .card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.1) !important;
+    }
+</style>

@@ -30,7 +30,6 @@ namespace ClubManagement.Repository.Repositories
                 .Where(u => u.Role == "ClubManager")
                 .ToListAsync();
         }
-
         public async Task<User?> GetByUsernameAsync(string username)
         {
             return await _context.Users

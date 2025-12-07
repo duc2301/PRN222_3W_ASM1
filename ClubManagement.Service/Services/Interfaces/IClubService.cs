@@ -12,5 +12,12 @@ namespace ClubManagement.Service.Services.Interfaces
         Task<CreateClubRequestDTO> CreateAsync(CreateClubRequestDTO club);
         Task<UpdateClubRequestDTO> UpdateAsync(UpdateClubRequestDTO club);
         Task<ClubResponseDTO> DeleteAsync(int id);
+        Task<ClubMembersPageViewModel?> GetMembersPageAsync(
+            int clubId,
+            string? search,
+            string? roleFilter,
+             string? statusFilter,
+            int page,
+            int pageSize);
     }
 }

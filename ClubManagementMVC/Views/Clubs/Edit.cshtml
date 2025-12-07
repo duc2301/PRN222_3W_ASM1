@@ -1,78 +1,72 @@
 ﻿@using ClubManagement.Service.DTOs.RequestDTOs
 @using System.Security.Claims
 @model UpdateClubRequestDTO
+
 @{
-    ViewData["Title"] = "Edit";
-}
-@{
+    Layout = "~/Views/Shared/_ClubLayout.cshtml";
+    ViewData["Title"] = "Chỉnh sửa CLB";
+    ViewData["HeaderTitle"] = "Chỉnh sửa CLB";
+    ViewData["HeaderSubtitle"] = "Cập nhật thông tin câu lạc bộ";
     var isClubManager = User.IsInRole("ClubManager");
+    var leaderError = ViewBag.LeaderError as string;
 }
 
-
-<h1>Edit</h1>
-
-<h4>Club</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="ClubId" />
-            <div class="form-group">
-                <label asp-for="ClubName" class="control-label"></label>
-                <input asp-for="ClubName" class="form-control" />
-                <span asp-validation-for="ClubName" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Description" class="control-label"></label>
-                <input asp-for="Description" class="form-control" />
-                <span asp-validation-for="Description" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="CreatedAt" class="control-label"></label>
-                <input asp-for="CreatedAt" class="form-control" />
-                <span asp-validation-for="CreatedAt" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label for="LeaderId">Leader</label>
-                @if (isClubManager)
-                {
-                    <input type="text" class="form-control" value="@Model.LeaderId" readonly />
-                    <input type="hidden" name="LeaderId" value="@Model.LeaderId" />
-                }
-                else
-                {
-                    @Html.DropDownListFor(m => m.LeaderId, (SelectList)ViewData["LeaderId"], "Select Leader", new { @class = "form-control" })
-                }
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="h5 fw-semibold mb-1">Chỉnh sửa CLB</h2>
+        <p class="text-muted mb-0" style="font-size: 14px;">
+            Cập nhật thông tin cho câu lạc bộ của bạn.
+        </p>
     </div>
+    <a asp-action="MyClubs" class="btn btn-outline-primary">
+        <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách
+    </a>
 </div>
 
-<div class="mt-4">
-    @if (ViewBag.CanCreateFee == true)
-    {
-        <a asp-controller="Fees" asp-action="Create" asp-route-clubId="@Model?.ClubId" class="btn btn-success">
-            <i class="bi bi-plus-circle me-1"></i> Tạo Phí cho Câu Lạc Bộ
-        </a>
-        <span class="mx-2">|</span>
-    }
-    <a asp-action="Details" asp-route-id="@Model?.ClubId" class="btn btn-info">View Details</a>
-    <span class="mx-2">|</span>
-    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+@if (!string.IsNullOrEmpty(leaderError))
+{
+    <div class="alert alert-warning mb-3">@leaderError</div>
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <form asp-action="Edit">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    <input type="hidden" asp-for="ClubId" />
+                    <div class="mb-3">
+                        <label asp-for="ClubName" class="form-label fw-semibold"></label>
+                        <input asp-for="ClubName" class="form-control" />
+                        <span asp-validation-for="ClubName" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label fw-semibold"></label>
+                        <input asp-for="Description" class="form-control" />
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+                    <input type="hidden" asp-for="CreatedAt" />
+                    <div class="mb-3">
+                        
+                        @if (isClubManager)
+                        {
+                            <input type="hidden" name="LeaderId" value="@Model.LeaderId" />
+                        }
+                        else
+                        {
+                            <label asp-for="LeaderId" class="form-label fw-semibold"></label>
+                            @Html.DropDownListFor(m => m.LeaderId, (SelectList)ViewData["LeaderId"], "Select Leader", new { @class = "form-select" })
+                        }
+                    </div>
+                    <div class="d-grid">
+                        <input type="submit" value="Lưu thay đổi" class="btn btn-primary fw-semibold" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}
-
-@{
-    var leaderError = ViewBag.LeaderError as string;
-}
-@if (!string.IsNullOrEmpty(leaderError))
-{
-    <div class="alert alert-warning">@leaderError</div>
 }

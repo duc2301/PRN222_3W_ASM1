@@ -27,7 +27,6 @@ namespace ClubManagement.Service.Services
             var users = await _unitOfWork.UserRepository.GetLeadersAsync();
             return _mapper.Map<List<UserResponseDTO>>(users);
         }
-
         public async Task<UserResponseDTO?> GetByUsernameAsync(string username)
         {
             var user = await _unitOfWork.UserRepository.GetByUsernameAsync(username); 
@@ -38,7 +37,11 @@ namespace ClubManagement.Service.Services
             {
                 UserId = user.UserId,
                 Username = user.Username,
-                Email = user.Email
+                Email = user.Email,
+                CreatedAt = user.CreatedAt,
+                FullName = user.FullName,
+                Department = user.Department,
+                Phone = user.Phone                
             };
         }
     }
