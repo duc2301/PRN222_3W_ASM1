@@ -28,7 +28,6 @@ namespace ClubManagementMVC.Controllers
         }
 
         // GET: Clubs
-        // Admin: xem tất cả, ưu tiên CLB mình làm leader lên trước
         // ClubManager: chỉ thấy các CLB mình quản lý
         [Authorize(Roles = "Admin,ClubManager")]
         public async Task<IActionResult> Index()
@@ -44,15 +43,6 @@ namespace ClubManagementMVC.Controllers
                     .OrderBy(c => c.ClubName)
                     .ToList();
             }
-            else if (User.IsInRole("Admin"))
-            {
-                // Admin: ưu tiên CLB mình làm leader, sau đó mới tới CLB khác
-                clubList = clubList
-                    .OrderByDescending(c => c.Leader != null && c.Leader.Username == currentUsername)
-                    .ThenBy(c => c.ClubName)
-                    .ToList();
-            }
-
             return View(clubList);
         }
 
