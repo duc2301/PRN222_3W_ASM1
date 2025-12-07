@@ -34,7 +34,7 @@ namespace ClubManagement.Service.Services
                 FeeId = feeId,
                 Amount = amount,
                 PaymentDate = DateTime.Now,
-                Status = "Paid"
+                Status = "Pending" // Đổi thành Pending để ClubManager xác nhận
             };
 
             await _paymentRepo.CreateAsync(payment);
@@ -74,6 +74,50 @@ namespace ClubManagement.Service.Services
             payment.PaymentDate = DateTime.Now;
 
             await _context.SaveChangesAsync();
+        }
+
+        // Student request đóng phí (chuyển từ Unpaid sang Pending - đã đóng, chờ xác nhận)
+        public async Task RequestPaymentAsync(int paymentId)
+        {
+            var payment = await _context.Payments
+                .AsTracking()
+                .FirstOrDefaultAsync(p => p.PaymentId == paymentId);
+
+            if (payment == null)
+                throw new Exception("Payment not found");
+
+            if (payment.Status == "Paid")
+                throw new Exception("Payment already confirmed");
+
+            if (payment.Status == "Expired")
+                throw new Exception("Payment has expired");
+
+            // Chuyển từ Unpaid sang Pending (đã đóng, chờ xác nhận)
+            payment.Status = "Pending";
+            payment.PaymentDate = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+        }
+
+        // Kiểm tra và cập nhật trạng thái quá hạn
+        public async Task CheckAndUpdateExpiredPaymentsAsync()
+        {
+            var today = DateOnly.FromDateTime(DateTime.Now);
+            var payments = await _context.Payments
+                .Include(p => p.Fee)
+                .Where(p => (p.Status == "Unpaid" || p.Status == "Pending") && 
+                           p.Fee.DueDate < today)
+                .ToListAsync();
+
+            foreach (var payment in payments)
+            {
+                payment.Status = "Expired";
+            }
+
+            if (payments.Any())
+            {
+                await _context.SaveChangesAsync();
+            }
         }
 
     }

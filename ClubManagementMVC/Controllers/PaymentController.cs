@@ -19,27 +19,65 @@ namespace ClubManagementMVC.Controllers
         // --------------------------
         // 1. Student xem payment của mình
         // --------------------------
+        [Authorize]
         public async Task<IActionResult> MyPayments()
         {
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                return Unauthorized();
+            }
 
+            var userId = int.Parse(userIdString);
+            
+            // Kiểm tra và cập nhật các payment quá hạn
+            await _services.PaymentService.CheckAndUpdateExpiredPaymentsAsync();
+            
             var payments = await _services.PaymentService.GetByUserAsync(userId);
 
             return View(payments);
         }
 
         // --------------------------
-        // 2. Admin/Leader xem tất cả
+        // 2. Admin/ClubManager xem tất cả
         // --------------------------
-        [Authorize(Roles = "Admin,Leader")]
+        [Authorize(Roles = "Admin,ClubManager")]
         public async Task<IActionResult> Index()
         {
-            var payments = await _services.PaymentService.GetAllAsync();
-            return View(payments);
+            // Kiểm tra và cập nhật các payment quá hạn
+            await _services.PaymentService.CheckAndUpdateExpiredPaymentsAsync();
+            
+            var allPayments = await _services.PaymentService.GetAllAsync();
+            
+            // Nếu là ClubManager, chỉ hiển thị payments của clubs mà họ là leader
+            if (User.IsInRole("ClubManager"))
+            {
+                var username = User.Identity?.Name;
+                var user = await _services.UserService.GetByUsernameAsync(username);
+                
+                if (user == null) return Unauthorized();
+
+                var clubs = await _services.ClubService.GetAllAsync();
+                var myClubIds = clubs.Where(c => c.LeaderId == user.UserId).Select(c => c.ClubId).ToList();
+                
+                // Lấy fees của các clubs mà user là leader
+                var allFees = new List<ClubManagement.Service.DTOs.ResponseDTOs.FeeResponseDTO>();
+                foreach (var clubId in myClubIds)
+                {
+                    var fees = await _services.FeeService.GetByClubAsync(clubId);
+                    allFees.AddRange(fees);
+                }
+                var myFeeIds = allFees.Select(f => f.FeeId).ToList();
+                
+                // Filter payments theo feeIds
+                allPayments = allPayments.Where(p => myFeeIds.Contains(p.FeeId));
+            }
+            
+            return View(allPayments);
         }
 
         // -------------------------
-        // 3. Create Payment (Student hoặc Leader)
+        // 3. Create Payment (Student hoặc ClubManager)
         // -------------------------
         [HttpGet]
         public IActionResult Create()
@@ -65,7 +103,7 @@ namespace ClubManagementMVC.Controllers
             return RedirectToAction(nameof(MyPayments));
         }
    
-        [Authorize(Roles = "Admin,Leader")]
+        [Authorize(Roles = "Admin,ClubManager")]
         [HttpGet]
         public async Task<IActionResult> Confirm(int id)
         {
@@ -77,7 +115,7 @@ namespace ClubManagementMVC.Controllers
 
             return View(payment);
         }
-        [Authorize(Roles = "Admin,Leader")]
+        [Authorize(Roles = "Admin,ClubManager")]
         [HttpPost]
         public async Task<IActionResult> ConfirmPayment(int id)
         {
@@ -92,8 +130,41 @@ namespace ClubManagementMVC.Controllers
             return RedirectToAction("Index");
         }
 
+        // --------------------------
+        // Student request đóng phí
+        // --------------------------
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RequestPayment(int paymentId)
+        {
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                return Unauthorized();
+            }
 
+            var userId = int.Parse(userIdString);
+            
+            // Kiểm tra payment có thuộc về user này không
+            var payment = await _services.PaymentService.GetByIdAsync(paymentId);
+            if (payment == null || payment.UserId != userId)
+            {
+                return Forbid();
+            }
 
+            try
+            {
+                await _services.PaymentService.RequestPaymentAsync(paymentId);
+                TempData["msg"] = "Yêu cầu đóng phí đã được gửi! Vui lòng chờ xác nhận từ chủ câu lạc bộ.";
+            }
+            catch (Exception ex)
+            {
+                TempData["error"] = ex.Message;
+            }
+
+            return RedirectToAction(nameof(MyPayments));
+        }
 
     }
 }

@@ -37,7 +37,15 @@
         </dd>
     </dl>
 </div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.ClubId">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+<div class="mt-4">
+    @if (User.IsInRole("Admin") || (User.IsInRole("ClubManager") && Model?.Leader?.Username == User.Identity?.Name))
+    {
+        <a asp-controller="Fees" asp-action="Create" asp-route-clubId="@Model?.ClubId" class="btn btn-success">
+            <i class="bi bi-plus-circle me-1"></i> Tạo Phí cho Câu Lạc Bộ
+        </a>
+        <span class="mx-2">|</span>
+    }
+    <a asp-action="Edit" asp-route-id="@Model?.ClubId" class="btn btn-primary">Edit</a>
+    <span class="mx-2">|</span>
+    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
 </div>

@@ -133,6 +133,12 @@ namespace ClubManagementMVC.Controllers
                 ViewBag.LeaderError = "No active leaders";
             }
             ViewData["LeaderId"] = new SelectList(leadersValid, "UserId", "Email", club.LeaderId);
+            
+            // Truyền thông tin để view có thể kiểm tra quyền hiển thị nút tạo phí
+            ViewBag.CanCreateFee = User.IsInRole("Admin") || 
+                                   (User.IsInRole("ClubManager") && club.Leader != null && 
+                                    club.Leader.Username == User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value);
+            
             return View(updateRequestValid);
         }
 

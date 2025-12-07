@@ -40,6 +40,11 @@ namespace ClubManagement.Service
 
             // Map cho Create/Update (Request DTO)             
             // CreateMap<ClubCreateDTO, Club>();
+
+            // Fee mappings
+            CreateMap<Fee, FeeResponseDTO>()
+                .ForMember(dest => dest.ClubName, opt => opt.MapFrom(src => src.Club.ClubName));
+            CreateMap<CreateFeeRequestDTO, Fee>();
         }
     }
 }

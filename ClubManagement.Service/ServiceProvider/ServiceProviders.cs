@@ -35,5 +35,7 @@ namespace ClubManagement.Service.ServiceProviders
             _unitOfWork.PaymentRepository,
             _unitOfWork.DbContext
         );
+
+        public IFeeService FeeService => new FeeService(_unitOfWork, _mapper);
     }
 }

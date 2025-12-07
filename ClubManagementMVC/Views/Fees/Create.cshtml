@@ -1,0 +1,90 @@
+@using ClubManagement.Service.DTOs.RequestDTOs
+@model CreateFeeRequestDTO
+
+@{
+    ViewData["Title"] = "Tạo Phí Mới";
+}
+
+<h1>Tạo Phí Mới</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            
+            <div class="form-group mb-3">
+                <label asp-for="ClubId" class="control-label fw-bold">Câu lạc bộ</label>
+                <select asp-for="ClubId" class="form-control" asp-items="ViewBag.ClubId">
+                    <option value="">-- Chọn câu lạc bộ --</option>
+                </select>
+                <span asp-validation-for="ClubId" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Title" class="control-label fw-bold">Tiêu đề</label>
+                <input asp-for="Title" class="form-control" placeholder="Ví dụ: Phí hoạt động tháng 1/2025" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Amount" class="control-label fw-bold">Số tiền (VNĐ)</label>
+                <input asp-for="Amount" class="form-control" type="number" step="1000" min="0" placeholder="100000" />
+                <span asp-validation-for="Amount" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="DueDate" class="control-label fw-bold">Hạn nộp</label>
+                <input asp-for="DueDate" class="form-control" type="date" min="@DateTime.Now.AddDays(1).ToString("yyyy-MM-dd")" />
+                <span asp-validation-for="DueDate" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Description" class="control-label fw-bold">Mô tả</label>
+                <textarea asp-for="Description" class="form-control" rows="4" placeholder="Mô tả chi tiết về khoản phí..."></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Tạo Phí" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(document).ready(function() {
+            // Set min date to tomorrow
+            var tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            var minDate = tomorrow.toISOString().split('T')[0];
+            $('#DueDate').attr('min', minDate);
+            
+            // Validate on change
+            $('#DueDate').on('change', function() {
+                var selectedDate = new Date($(this).val());
+                var today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                if (selectedDate <= today) {
+                    $(this).addClass('is-invalid');
+                    if ($(this).next('.text-danger').length === 0) {
+                        $(this).after('<span class="text-danger field-validation-error">Hạn nộp phải lớn hơn ngày hiện tại.</span>');
+                    }
+                } else {
+                    $(this).removeClass('is-invalid');
+                    $(this).next('.text-danger.field-validation-error').remove();
+                }
+            });
+        });
+    </script>
+}
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger mt-3">@ViewBag.Error</div>
+}
+

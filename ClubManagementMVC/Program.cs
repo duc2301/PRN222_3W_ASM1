@@ -50,6 +50,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IActivityService, ActivityService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IJoinRequestService, JoinRequestService>();
+builder.Services.AddScoped<IFeeService, FeeService>();
 builder.Services.AddSession(options =>
 {
     options.Cookie.HttpOnly = true;

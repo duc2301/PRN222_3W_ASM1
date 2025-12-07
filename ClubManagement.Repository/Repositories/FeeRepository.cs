@@ -18,8 +18,23 @@ namespace ClubManagement.Repository.Repositories
         public async Task<List<Fee>> GetByClubAsync(int clubId)
         {
             return await _context.Fees
+                .Include(f => f.Club)
                 .Where(f => f.ClubId == clubId)
                 .ToListAsync();
+        }
+
+        public async Task<List<Fee>> GetAllWithClubAsync()
+        {
+            return await _context.Fees
+                .Include(f => f.Club)
+                .ToListAsync();
+        }
+
+        public async Task<Fee> GetByIdWithClubAsync(int id)
+        {
+            return await _context.Fees
+                .Include(f => f.Club)
+                .FirstOrDefaultAsync(f => f.FeeId == id);
         }
     }
 }
