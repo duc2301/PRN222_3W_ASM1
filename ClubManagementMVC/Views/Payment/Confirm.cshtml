@@ -3,16 +3,16 @@
 <h2>Xác nhận thanh toán</h2>
 
 <div class="card p-3">
-    <p><strong>User:</strong> @Model.User.Email</p>
-    <p><strong>Fee:</strong> @Model.Fee.Title</p>
+    <p><strong>User:</strong> @Model.User?.Email</p>
+    <p><strong>Fee:</strong> @Model.Fee?.Title</p>
     <p><strong>Amount:</strong> @Model.Amount</p>
     <p><strong>Status hiện tại:</strong> @Model.Status</p>
 </div>
 
 <form method="post" asp-action="ConfirmPayment">
     <input type="hidden" name="id" value="@Model.PaymentId" />
-
     <button type="submit" class="btn btn-success mt-3">
         Xác nhận đã thanh toán
     </button>
+    <a class="btn btn-secondary mt-3" href="@Url.Action("Index", "Payment")">Trở về</a>
 </form>

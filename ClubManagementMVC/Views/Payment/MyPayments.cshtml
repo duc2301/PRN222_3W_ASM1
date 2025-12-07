@@ -15,10 +15,10 @@
         @foreach (var p in Model)
         {
             <tr>
-                <td>@p.FeeId</td>
+                <td>@(p.Fee != null ? p.Fee.Title : p.FeeId.ToString())</td>
                 <td>@p.Amount</td>
                 <td>@p.Status</td>
-                <td>@p.PaymentDate</td>
+                <td>@(p.PaymentDate.HasValue? p.PaymentDate.Value.ToString("dd/MM/yyyy HH:mm") : "-")</td>
             </tr>
         }
     </tbody>

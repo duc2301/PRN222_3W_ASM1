@@ -15,17 +15,17 @@ namespace ClubManagement.Service.Services
     public class PaymentService : IPaymentService
     {
         private readonly IPaymentRepository _paymentRepo;
-
         private readonly ClubManagementContext _context;
 
         public PaymentService(
-       IPaymentRepository paymentRepo,
-       ClubManagementContext context)
+           IPaymentRepository paymentRepo,
+           ClubManagementContext context)
         {
             _paymentRepo = paymentRepo;
             _context = context;
         }
 
+        // Tạo payment dưới dạng "Pending" (chờ duyệt)
         public async Task<Payment> CreatePaymentAsync(int userId, int feeId, decimal amount)
         {
             var payment = new Payment
@@ -33,8 +33,9 @@ namespace ClubManagement.Service.Services
                 UserId = userId,
                 FeeId = feeId,
                 Amount = amount,
-                PaymentDate = DateTime.Now,
-                Status = "Paid"
+                // Chưa duyệt => PaymentDate null
+                PaymentDate = null,
+                Status = "Pending"
             };
 
             await _paymentRepo.CreateAsync(payment);
@@ -42,16 +43,17 @@ namespace ClubManagement.Service.Services
 
             return payment;
         }
+
         public async Task<Payment> GetByIdAsync(int id)
         {
             return await _paymentRepo.GetByIdAsync(id);
         }
 
-
         public async Task<IEnumerable<Payment>> GetAllAsync()
         {
             return await _paymentRepo.GetAllWithDetailsAsync();
         }
+
         public async Task<IEnumerable<Payment>> GetByUserAsync(int userId)
         {
             return await _paymentRepo.GetByUserAsync(userId);
@@ -59,12 +61,15 @@ namespace ClubManagement.Service.Services
 
         public async Task<bool> HasPaidAsync(int userId, int feeId)
         {
+            // Kiểm tra đã có bản ghi "Paid" cho user + fee hay chưa
             return await _paymentRepo.HasPaidAsync(userId, feeId);
         }
+
+        // Dùng để duyệt: set Paid và set PaymentDate
         public async Task MarkAsPaidAsync(int paymentId)
         {
             var payment = await _context.Payments
-                .AsTracking() 
+                .AsTracking()
                 .FirstOrDefaultAsync(p => p.PaymentId == paymentId);
 
             if (payment == null)
