@@ -14,5 +14,6 @@ namespace ClubManagement.Service.ServiceProviders.Interface
         IUserService UserService { get; }
         IJoinRequestService JoinRequestService { get; }
         IPaymentService PaymentService { get; }
+        IFeeService FeeService { get; }
     }
 }

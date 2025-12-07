@@ -82,7 +82,7 @@ namespace ClubManagementMVC.Controllers
         // ----------------------------------------------------
         // GET: JoinRequests/Approve/5
         // ----------------------------------------------------
-        [Authorize(Roles = "Admin,Leader")]
+        [Authorize(Roles = "Admin,ClubManager")]
         public async Task<IActionResult> Approve(int id)
         {
             var username = User.Identity!.Name;
@@ -116,7 +116,7 @@ namespace ClubManagementMVC.Controllers
             var role = User.FindFirstValue(ClaimTypes.Role);
             var username = User.Identity!.Name;
 
-            if (role != "Leader" && role != "Admin")
+            if (role != "ClubManager" && role != "Admin")
                 return Forbid();
 
             var user = await _serviceProviders.UserService.GetByUsernameAsync(username);
@@ -147,7 +147,7 @@ namespace ClubManagementMVC.Controllers
         public async Task<IActionResult> RejectConfirmed(RejectJoinRequestDTO dto)
         {
             var role = User.FindFirstValue(ClaimTypes.Role);
-            if (role != "Leader" && role != "Admin")
+            if (role != "ClubManager" && role != "Admin")
                 return Forbid();
 
             var username = User.Identity!.Name;

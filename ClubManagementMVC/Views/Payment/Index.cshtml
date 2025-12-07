@@ -2,6 +2,8 @@
 
 @{
     bool isAdmin = User.IsInRole("Admin");
+    bool isClubManager = User.IsInRole("ClubManager");
+    bool canConfirm = isAdmin || isClubManager;
 }
 
 <h2>All Payments</h2>
@@ -14,7 +16,7 @@
             <th>Amount</th>
             <th>Status</th>
             <th>Date</th>
-            @if (isAdmin)
+            @if (canConfirm)
             {
                 <th>Action</th>
             }
@@ -27,16 +29,44 @@
                 <td>@p.User.Email</td>
                 <td>@p.Fee.Title</td>
                 <td>@p.Amount</td>
-                <td>@p.Status</td>
-                <td>@p.PaymentDate</td>
+                <td>
+                    @if (p.Status == "Paid")
+                    {
+                        <span class="badge bg-success">Đã xác nhận</span>
+                    }
+                    else if (p.Status == "Pending")
+                    {
+                        <span class="badge bg-info text-white">Đã đóng, chờ xác nhận</span>
+                    }
+                    else if (p.Status == "Unpaid")
+                    {
+                        <span class="badge bg-warning text-dark">Chưa đóng</span>
+                    }
+                    else if (p.Status == "Expired")
+                    {
+                        <span class="badge bg-danger">Quá hạn</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">@p.Status</span>
+                    }
+                </td>
+                <td>@p.PaymentDate?.ToString("dd/MM/yyyy HH:mm")</td>
 
-                @if (isAdmin)
+                @if (canConfirm)
                 {
                     <td>
-                        @if (p.Status != "Paid")
+                        @if (p.Status == "Pending")
                         {
-                            <a class="btn btn-success btn-sm" href="/Payment/Confirm/@p.PaymentId">Ghi nhận thanh toán</a>
-
+                            <a class="btn btn-success btn-sm" href="/Payment/Confirm/@p.PaymentId">Xác nhận thanh toán</a>
+                        }
+                        else if (p.Status == "Paid")
+                        {
+                            <span class="badge bg-success">Đã xác nhận</span>
+                        }
+                        else if (p.Status == "Unpaid" || p.Status == "Expired")
+                        {
+                            <span class="text-muted">-</span>
                         }
                     </td>
                 }

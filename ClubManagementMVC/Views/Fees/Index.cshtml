@@ -1,0 +1,202 @@
+@using ClubManagement.Service.DTOs.ResponseDTOs
+@model IEnumerable<FeeResponseDTO>
+
+@{
+    ViewData["Title"] = "Quản lý Phí";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-primary"><i class="bi bi-cash-stack me-2"></i>Danh sách Phí</h2>
+            <p class="text-muted mb-0">Quản lý các khoản phí của câu lạc bộ.</p>
+        </div>
+        <a asp-action="Create" class="btn btn-success shadow-sm">
+            <i class="bi bi-plus-lg me-1"></i> Tạo Phí Mới
+        </a>
+    </div>
+
+    @if (User.IsInRole("Admin") && ViewBag.Clubs != null)
+    {
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body p-3 bg-light rounded">
+                <form method="get" class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Lọc theo Câu lạc bộ:</label>
+                        <select name="clubId" class="form-select" onchange="this.form.submit()">
+                            <option value="">Tất cả</option>
+                            @foreach (var item in (SelectList)ViewBag.Clubs)
+                            {
+                                <option value="@item.Value" selected="@item.Selected">@item.Text</option>
+                            }
+                        </select>
+                    </div>
+                </form>
+            </div>
+        </div>
+    }
+
+    <div class="card shadow border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped align-middle mb-0">
+                    <thead class="bg-primary text-white">
+                        <tr>
+                            <th class="py-3 ps-4">Tiêu đề</th>
+                            <th class="py-3">Câu lạc bộ</th>
+                            <th class="py-3">Số tiền</th>
+                            <th class="py-3">Hạn nộp</th>
+                            <th class="py-3">Mô tả</th>
+                            <th class="py-3 text-end pe-4">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center py-5 text-muted">
+                                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                    Chưa có phí nào. Hãy tạo mới!
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="ps-4 fw-bold text-dark">
+                                        @item.Title
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info text-white">@item.ClubName</span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold text-success">
+                                            @item.Amount.ToString("N0") đ
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border">
+                                            <i class="bi bi-calendar-event me-1"></i>
+                                            @item.DueDate.ToString("dd/MM/yyyy")
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="text-muted" title="@item.Description">
+                                            @(item.Description?.Length > 50 ? item.Description.Substring(0, 50) + "..." : item.Description ?? "Không có mô tả")
+                                        </span>
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <div class="btn-group" role="group">
+                                            <a asp-action="Details" asp-route-id="@item.FeeId" class="btn btn-sm btn-outline-info" title="Chi tiết">
+                                                <i class="bi bi-info-circle"></i> Chi tiết
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        @* Phân trang *@
+        @if (ViewBag.TotalPages > 1)
+        {
+            <div class="card-footer bg-white border-top">
+                <nav aria-label="Phân trang">
+                    <ul class="pagination justify-content-center mb-0">
+                        @{
+                            int currentPage = ViewBag.CurrentPage;
+                            int totalPages = ViewBag.TotalPages;
+                            int? clubId = ViewBag.ClubId;
+                            
+                            // Nút Previous
+                            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                                @if (currentPage > 1)
+                                {
+                                    <a class="page-link" href="?page=@(currentPage - 1)@(clubId.HasValue ? "&clubId=" + clubId.Value : "")" aria-label="Trang trước">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="page-link" aria-label="Trang trước">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </span>
+                                }
+                            </li>
+                            
+                            // Hiển thị các số trang
+                            int startPage = Math.Max(1, currentPage - 2);
+                            int endPage = Math.Min(totalPages, currentPage + 2);
+                            
+                            if (startPage > 1)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=1@(clubId.HasValue ? "&clubId=" + clubId.Value : "")">1</a>
+                                </li>
+                                @if (startPage > 2)
+                                {
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                }
+                            }
+                            
+                            for (int i = startPage; i <= endPage; i++)
+                            {
+                                <li class="page-item @(i == currentPage ? "active" : "")">
+                                    <a class="page-link" href="?page=@i@(clubId.HasValue ? "&clubId=" + clubId.Value : "")">@i</a>
+                                </li>
+                            }
+                            
+                            if (endPage < totalPages)
+                            {
+                                @if (endPage < totalPages - 1)
+                                {
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                }
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=@totalPages@(clubId.HasValue ? "&clubId=" + clubId.Value : "")">@totalPages</a>
+                                </li>
+                            }
+                            
+                            // Nút Next
+                            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                                @if (currentPage < totalPages)
+                                {
+                                    <a class="page-link" href="?page=@(currentPage + 1)@(clubId.HasValue ? "&clubId=" + clubId.Value : "")" aria-label="Trang sau">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="page-link" aria-label="Trang sau">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </span>
+                                }
+                            </li>
+                        }
+                    </ul>
+                </nav>
+                <div class="text-center text-muted mt-2">
+                    <small>Hiển thị @((ViewBag.CurrentPage - 1) * ViewBag.PageSize + 1) - @(Math.Min(ViewBag.CurrentPage * ViewBag.PageSize, ViewBag.TotalItems)) trong tổng số @ViewBag.TotalItems phí</small>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@if (TempData["msg"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+        @TempData["msg"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+

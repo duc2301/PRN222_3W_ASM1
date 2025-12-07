@@ -36,9 +36,25 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="JoinRequests" asp-action="Index">Request</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Payment" asp-action="Index">Payment</a>
-                        </li>
+                        @if (User.IsInRole("Admin") || User.IsInRole("ClubManager"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Payment" asp-action="Index">Payment</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Fees" asp-action="Index">
+                                    <i class="bi bi-cash-stack me-1"></i>Fee
+                                </a>
+                            </li>
+                        }
+                        @if (User.IsInRole("Student"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Payment" asp-action="MyPayments">
+                                    <i class="bi bi-wallet2 me-1"></i>My Payments
+                                </a>
+                            </li>
+                        }
                     </ul>
 
                     <ul class="navbar-nav ms-auto">
