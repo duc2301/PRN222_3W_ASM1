@@ -29,7 +29,7 @@
                 <td>
                     @if (r.Status == "Pending")
                     {
-                        @if (User.IsInRole("Admin") || User.IsInRole("Leader"))
+                        @if (User.IsInRole("Admin") || User.IsInRole("ClubManager"))
                         {
                             <a class="btn btn-success btn-sm" href="/JoinRequests/Approve/@r.RequestId">Approve</a>
                             <a class="btn btn-danger btn-sm" href="/JoinRequests/Reject/@r.RequestId">Reject</a>
