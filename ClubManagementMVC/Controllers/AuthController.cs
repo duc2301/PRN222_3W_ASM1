@@ -53,15 +53,9 @@ namespace ClubManagementMVC.Controllers
                     CookieAuthenticationDefaults.AuthenticationScheme,
                     new ClaimsPrincipal(claimsIdentity),
                     authProperties);
-
-
-
-                if (user.Role.Equals("Admin", StringComparison.OrdinalIgnoreCase))
-                {
-                    return RedirectToAction("Index", "Clubs");
-                }
-                else if (user.Role.Equals("ClubManager", StringComparison.OrdinalIgnoreCase)
-                      || user.Role.Equals("ClubLeader", StringComparison.OrdinalIgnoreCase)) 
+                
+                if (user.Role.Equals("ClubManager", StringComparison.OrdinalIgnoreCase)
+                      || user.Role.Equals("Admin", StringComparison.OrdinalIgnoreCase)) 
                 {
                     return RedirectToAction("MyClubs", "Clubs");
                 }

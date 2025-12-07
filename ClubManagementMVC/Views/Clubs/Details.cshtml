@@ -178,13 +178,44 @@
             @clubName
         </h2>
         <small>@clubDescription</small>
+        @if (Model?.Club != null)
+        {
+            <div class="mt-2" style="font-size: 14px;">
+                <span class="me-3">
+                    <i class="bi bi-calendar-event me-1"></i>
+                    <strong>Ngày thành lập:</strong>
+                    @(Model.Club.CreatedAt?.ToString("dd/MM/yyyy") ?? "N/A")
+                </span>
+                <span>
+                    <i class="bi bi-person-fill me-1"></i>
+                    <strong>Chủ nhiệm:</strong>
+                    @(Model.Club.Leader?.FullName ?? "N/A")
+                    @if (!string.IsNullOrEmpty(Model.Club.Leader?.Email))
+                    {
+                        <span class="text-muted" style="font-size: 13px;">(@Model.Club.Leader.Email)</span>
+                    }
+                </span>
+            </div>
+        }
     </div>
 
     <div class="club-header-actions d-flex gap-2">
-        @* KHÔNG có nút chia sẻ *@
-        <button type="button" class="btn btn-config">
+        <a asp-action="Edit"
+           asp-controller="Clubs"
+           asp-route-id="@Model.Club.ClubId"
+           class="btn btn-config">
             <i class="bi bi-gear-fill me-1"></i> Cấu hình
-        </button>
+        </a>
+        @if (User.IsInRole("Admin"))
+        {
+            <form asp-action="Delete" asp-controller="Clubs" asp-route-id="@Model.Club.ClubId"
+                  method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa câu lạc bộ này? Hành động này không thể hoàn tác.');">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-trash me-1"></i> Xóa
+                </button>
+            </form>
+        }
     </div>
 </div>
 
@@ -291,3 +322,4 @@
         </div>
     </div>
 </div>
+

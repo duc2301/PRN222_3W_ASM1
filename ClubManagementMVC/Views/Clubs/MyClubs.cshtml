@@ -55,6 +55,18 @@ else
                                         Nơi sinh viên cùng sinh hoạt và phát triển kỹ năng.
                                     </p>
                                 }
+                                <div class="mb-2 small text-muted">
+                                    <i class="bi bi-calendar-event me-1"></i>
+                                    <span>Ngày thành lập: @(club.CreatedAt?.ToString("dd/MM/yyyy") ?? "N/A")</span>
+                                </div>
+                                <div class="mb-2 small text-muted">
+                                    <i class="bi bi-person-fill me-1"></i>
+                                    <span>Chủ nhiệm: @(club.Leader?.FullName ?? "N/A")</span>
+                                    @if (!string.IsNullOrEmpty(club.Leader?.Email))
+                                    {
+                                        <span class="text-muted" style="font-size: 13px;">(@club.Leader.Email)</span>
+                                    }
+                                </div>
                             </div>
                         </div>
                     </div>

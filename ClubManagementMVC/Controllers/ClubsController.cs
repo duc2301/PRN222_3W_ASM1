@@ -89,10 +89,17 @@ namespace ClubManagementMVC.Controllers
         public async Task<IActionResult> Create(
             [Bind("ClubId,ClubName,Description,CreatedAt,LeaderId")] CreateClubRequestDTO club)
         {
+            // Check for duplicate club name (case-insensitive)
+            var allClubs = await _serviceProviders.ClubService.GetAllAsync();
+            if (allClubs.Any(c => c.ClubName.Trim().ToLower() == club.ClubName.Trim().ToLower()))
+            {
+                ModelState.AddModelError("ClubName", "Tên câu lạc bộ đã tồn tại.");
+            }
+
             if (ModelState.IsValid)
             {
                 await _serviceProviders.ClubService.CreateAsync(club);
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(MyClubs));
             }
 
             ViewData["LeaderId"] = new SelectList(
@@ -159,6 +166,13 @@ namespace ClubManagementMVC.Controllers
                 return NotFound();
             }
 
+            // Check for duplicate club name (case-insensitive, exclude current club)
+            var allClubs = await _serviceProviders.ClubService.GetAllAsync();
+            if (allClubs.Any(c => c.ClubId != club.ClubId && c.ClubName.Trim().ToLower() == club.ClubName.Trim().ToLower()))
+            {
+                ModelState.AddModelError("ClubName", "Tên câu lạc bộ đã tồn tại.");
+            }
+
             if (User.IsInRole("ClubManager"))
             {
                 var currentUsername = User.FindFirst(ClaimTypes.Name)?.Value;
@@ -189,11 +203,9 @@ namespace ClubManagementMVC.Controllers
                     {
                         return NotFound();
                     }
-
                     throw;
                 }
-
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(MyClubs));
             }
 
             ViewData["LeaderId"] = new SelectList(
@@ -230,7 +242,7 @@ namespace ClubManagementMVC.Controllers
                 await _serviceProviders.ClubService.DeleteAsync(id);
             }
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(MyClubs));
         }
 
         private bool ClubExists(int id)
@@ -251,7 +263,18 @@ namespace ClubManagementMVC.Controllers
             }
 
             var allClubs = await _serviceProviders.ClubService.GetAllAsync();
-            var myClubs = allClubs.Where(c => c.LeaderId == current.UserId).ToList();
+
+            List<ClubResponseDTO> myClubs;
+            if (User.IsInRole("Admin"))
+            {
+                // Admin: show all clubs
+                myClubs = allClubs.ToList();
+            }
+            else
+            {
+                // ClubManager: show only clubs they lead
+                myClubs = allClubs.Where(c => c.LeaderId == current.UserId).ToList();
+            }
 
             return View(myClubs);
         }
