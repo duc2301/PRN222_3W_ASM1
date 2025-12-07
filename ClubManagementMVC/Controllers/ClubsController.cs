@@ -43,7 +43,6 @@ namespace ClubManagementMVC.Controllers
                     .OrderBy(c => c.ClubName)
                     .ToList();
             }
-
             return View(clubList);
         }
 
