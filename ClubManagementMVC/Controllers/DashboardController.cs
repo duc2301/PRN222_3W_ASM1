@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ClubManagementMVC.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,ClubManager")]
     public class DashboardController : Controller
     {
         private readonly IDashboardService _dashboardService;

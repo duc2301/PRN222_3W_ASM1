@@ -45,6 +45,11 @@ namespace ClubManagement.Service
                .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.User.FullName))
                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
                .ForMember(dest => dest.Department, opt => opt.MapFrom(src => src.User.Department));
+
+            // Fee mappings
+            CreateMap<Fee, FeeResponseDTO>()
+                .ForMember(dest => dest.ClubName, opt => opt.MapFrom(src => src.Club != null ? src.Club.ClubName : string.Empty));
+            CreateMap<CreateFeeRequestDTO, Fee>();
         }
     }
 }

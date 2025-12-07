@@ -5,51 +5,87 @@
     ViewData["Title"] = "Tạo Phí Mới";
 }
 
-<h1>Tạo Phí Mới</h1>
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-primary"><i class="bi bi-plus-circle me-2"></i>Tạo Phí Mới</h2>
+            <p class="text-muted mb-0">Tạo khoản phí mới cho câu lạc bộ. Phí sẽ tự động được phân bổ cho tất cả thành viên.</p>
+        </div>
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Quay lại
+        </a>
+    </div>
 
-<hr />
-<div class="row">
-    <div class="col-md-6">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            
-            <div class="form-group mb-3">
-                <label asp-for="ClubId" class="control-label fw-bold">Câu lạc bộ</label>
-                <select asp-for="ClubId" class="form-control" asp-items="ViewBag.ClubId">
-                    <option value="">-- Chọn câu lạc bộ --</option>
-                </select>
-                <span asp-validation-for="ClubId" class="text-danger"></span>
-            </div>
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow border-0">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-receipt me-2"></i>Thông tin Phí</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Create">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        
+                        <div class="mb-4">
+                            <label asp-for="ClubId" class="form-label fw-bold">
+                                Câu lạc bộ <span class="text-danger">*</span>
+                            </label>
+                            <select asp-for="ClubId" class="form-select form-control-lg" asp-items="ViewBag.ClubId">
+                                <option value="">-- Chọn câu lạc bộ --</option>
+                            </select>
+                            <span asp-validation-for="ClubId" class="text-danger"></span>
+                            <small class="form-text text-muted">Chọn câu lạc bộ cần tạo phí</small>
+                        </div>
 
-            <div class="form-group mb-3">
-                <label asp-for="Title" class="control-label fw-bold">Tiêu đề</label>
-                <input asp-for="Title" class="form-control" placeholder="Ví dụ: Phí hoạt động tháng 1/2025" />
-                <span asp-validation-for="Title" class="text-danger"></span>
-            </div>
+                        <div class="mb-4">
+                            <label asp-for="Title" class="form-label fw-bold">
+                                Tiêu đề <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Title" class="form-control form-control-lg" placeholder="Ví dụ: Phí hoạt động tháng 1/2025" />
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
 
-            <div class="form-group mb-3">
-                <label asp-for="Amount" class="control-label fw-bold">Số tiền (VNĐ)</label>
-                <input asp-for="Amount" class="form-control" type="number" step="1000" min="0" placeholder="100000" />
-                <span asp-validation-for="Amount" class="text-danger"></span>
-            </div>
+                        <div class="mb-4">
+                            <label asp-for="Amount" class="form-label fw-bold">
+                                Tổng số tiền (VNĐ) <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Amount" class="form-control form-control-lg" type="number" step="1000" min="1000" placeholder="100000" />
+                            <span asp-validation-for="Amount" class="text-danger"></span>
+                            <small class="form-text text-muted">Số tiền này sẽ được chia đều cho tất cả thành viên trong câu lạc bộ</small>
+                        </div>
 
-            <div class="form-group mb-3">
-                <label asp-for="DueDate" class="control-label fw-bold">Hạn nộp</label>
-                <input asp-for="DueDate" class="form-control" type="date" min="@DateTime.Now.AddDays(1).ToString("yyyy-MM-dd")" />
-                <span asp-validation-for="DueDate" class="text-danger"></span>
-            </div>
+                        <div class="mb-4">
+                            <label asp-for="DueDate" class="form-label fw-bold">
+                                Hạn nộp <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="DueDate" class="form-control form-control-lg" type="date" min="@DateTime.Now.AddDays(1).ToString("yyyy-MM-dd")" />
+                            <span asp-validation-for="DueDate" class="text-danger"></span>
+                            <small class="form-text text-muted">Hạn nộp phải lớn hơn ngày hiện tại</small>
+                        </div>
 
-            <div class="form-group mb-3">
-                <label asp-for="Description" class="control-label fw-bold">Mô tả</label>
-                <textarea asp-for="Description" class="form-control" rows="4" placeholder="Mô tả chi tiết về khoản phí..."></textarea>
-                <span asp-validation-for="Description" class="text-danger"></span>
-            </div>
+                        <div class="mb-4">
+                            <label asp-for="Description" class="form-label fw-bold">Mô tả</label>
+                            <textarea asp-for="Description" class="form-control" rows="4" placeholder="Mô tả chi tiết về khoản phí..."></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
 
-            <div class="form-group">
-                <input type="submit" value="Tạo Phí" class="btn btn-primary" />
-                <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+                        <div class="alert alert-info" role="alert">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <strong>Lưu ý:</strong> Sau khi tạo phí, hệ thống sẽ tự động gửi khoản phí cho tất cả thành viên đang hoạt động trong câu lạc bộ. Thành viên sẽ tự xác nhận đóng phí trong phần "My Payments".
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check-circle me-1"></i> Tạo Phí
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary btn-lg">
+                                <i class="bi bi-x-circle me-1"></i> Hủy
+                            </a>
+                        </div>
+                    </form>
+                </div>
             </div>
-        </form>
+        </div>
     </div>
 </div>
 

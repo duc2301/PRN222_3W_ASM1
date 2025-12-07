@@ -1,76 +1,160 @@
 ﻿@model IEnumerable<ClubManagement.Repository.Models.Payment>
 
 @{
+    ViewData["Title"] = "Quản lý Thanh toán";
     bool isAdmin = User.IsInRole("Admin");
     bool isClubManager = User.IsInRole("ClubManager");
     bool canConfirm = isAdmin || isClubManager;
 }
 
-<h2>All Payments</h2>
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-primary"><i class="bi bi-credit-card me-2"></i>Quản lý Thanh toán</h2>
+            <p class="text-muted mb-0">Xem và xác nhận các khoản thanh toán từ thành viên.</p>
+        </div>
+    </div>
 
-<table class="table table-hover">
-    <thead>
-        <tr>
-            <th>User</th>
-            <th>Fee Title</th>
-            <th>Amount</th>
-            <th>Status</th>
-            <th>Date</th>
-            @if (canConfirm)
-            {
-                <th>Action</th>
-            }
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var p in Model)
-        {
-            <tr>
-                <td>@p.User.Email</td>
-                <td>@p.Fee.Title</td>
-                <td>@p.Amount</td>
-                <td>
-                    @if (p.Status == "Paid")
-                    {
-                        <span class="badge bg-success">Đã xác nhận</span>
-                    }
-                    else if (p.Status == "Pending")
-                    {
-                        <span class="badge bg-info text-white">Đã đóng, chờ xác nhận</span>
-                    }
-                    else if (p.Status == "Unpaid")
-                    {
-                        <span class="badge bg-warning text-dark">Chưa đóng</span>
-                    }
-                    else if (p.Status == "Expired")
-                    {
-                        <span class="badge bg-danger">Quá hạn</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-secondary">@p.Status</span>
-                    }
-                </td>
-                <td>@p.PaymentDate?.ToString("dd/MM/yyyy HH:mm")</td>
+    <div class="card shadow border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped align-middle mb-0">
+                    <thead class="bg-primary text-white">
+                        <tr>
+                            <th class="py-3 ps-4">Thành viên</th>
+                            <th class="py-3">Email</th>
+                            <th class="py-3">Tiêu đề phí</th>
+                            <th class="py-3">Câu lạc bộ</th>
+                            <th class="py-3">Số tiền</th>
+                            <th class="py-3">Trạng thái</th>
+                            <th class="py-3">Ngày đóng</th>
+                            <th class="py-3">Hạn nộp</th>
+                            @if (canConfirm)
+                            {
+                                <th class="py-3 text-end pe-4">Thao tác</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="@(canConfirm ? 9 : 8)" class="text-center py-5 text-muted">
+                                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                    Chưa có thanh toán nào.
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var p in Model)
+                            {
+                                <tr>
+                                    <td class="ps-4 fw-bold">@p.User?.FullName</td>
+                                    <td>@p.User?.Email</td>
+                                    <td>@p.Fee?.Title</td>
+                                    <td>
+                                        <span class="badge bg-info text-white">@p.Fee?.Club?.ClubName</span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold text-success">@p.Amount.ToString("N0") đ</span>
+                                    </td>
+                                    <td>
+                                        @if (p.Status == "Paid")
+                                        {
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle me-1"></i>Đã xác nhận
+                                            </span>
+                                        }
+                                        else if (p.Status == "Pending")
+                                        {
+                                            <span class="badge bg-info text-white">
+                                                <i class="bi bi-hourglass-split me-1"></i>Đã đóng, chờ xác nhận
+                                            </span>
+                                        }
+                                        else if (p.Status == "Unpaid")
+                                        {
+                                            <span class="badge bg-warning text-dark">
+                                                <i class="bi bi-clock me-1"></i>Chưa đóng
+                                            </span>
+                                        }
+                                        else if (p.Status == "Expired")
+                                        {
+                                            <span class="badge bg-danger">
+                                                <i class="bi bi-exclamation-triangle me-1"></i>Quá hạn
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">@p.Status</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (p.PaymentDate.HasValue)
+                                        {
+                                            <span>@p.PaymentDate.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Chưa đóng</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (p.Fee?.DueDate != null)
+                                        {
+                                            <span class="badge bg-light text-dark border">
+                                                <i class="bi bi-calendar-event me-1"></i>
+                                                @p.Fee.DueDate.ToString("dd/MM/yyyy")
+                                            </span>
+                                        }
+                                    </td>
+                                    @if (canConfirm)
+                                    {
+                                        <td class="text-end pe-4">
+                                            @if (p.Status == "Pending")
+                                            {
+                                                <form asp-action="ConfirmPayment" method="post" style="display: inline;">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="id" value="@p.PaymentId" />
+                                                    <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Bạn có chắc chắn muốn xác nhận thanh toán này?');">
+                                                        <i class="bi bi-check-circle me-1"></i>Xác nhận
+                                                    </button>
+                                                </form>
+                                            }
+                                            else if (p.Status == "Paid")
+                                            {
+                                                <span class="badge bg-success">
+                                                    <i class="bi bi-check-circle me-1"></i>Đã xác nhận
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 
-                @if (canConfirm)
-                {
-                    <td>
-                        @if (p.Status == "Pending")
-                        {
-                            <a class="btn btn-success btn-sm" href="/Payment/Confirm/@p.PaymentId">Xác nhận thanh toán</a>
-                        }
-                        else if (p.Status == "Paid")
-                        {
-                            <span class="badge bg-success">Đã xác nhận</span>
-                        }
-                        else if (p.Status == "Unpaid" || p.Status == "Expired")
-                        {
-                            <span class="text-muted">-</span>
-                        }
-                    </td>
-                }
-            </tr>
-        }
-    </tbody>
-</table>
+@if (TempData["msg"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+        @TempData["msg"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+        @TempData["error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}

@@ -101,8 +101,8 @@
                                             <form asp-action="RequestPayment" method="post" style="display: inline;">
                                                 @Html.AntiForgeryToken()
                                                 <input type="hidden" name="paymentId" value="@p.PaymentId" />
-                                                <button type="submit" class="btn btn-sm btn-primary" onclick="return confirm('Bạn có chắc chắn muốn đóng khoản phí này?');">
-                                                    <i class="bi bi-check-circle me-1"></i>Đóng phí
+                                                <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Bạn có chắc chắn muốn xác nhận đóng khoản phí này?');">
+                                                    <i class="bi bi-check-circle me-1"></i>Xác nhận đóng phí
                                                 </button>
                                             </form>
                                         }

@@ -59,18 +59,58 @@
         <div class="col-md-6">
             <div class="card shadow border-0">
                 <div class="card-header bg-info text-white">
-                    <h5 class="mb-0"><i class="bi bi-people me-2"></i>Danh sách Thanh toán</h5>
+                    <h5 class="mb-0">
+                        <i class="bi bi-people me-2"></i>Danh sách Thanh toán
+                        <span class="badge bg-light text-dark ms-2">@payments.Count() thành viên</span>
+                    </h5>
                 </div>
                 <div class="card-body">
                     @if (!payments.Any())
                     {
-                        <p class="text-muted text-center py-3">Chưa có ai đóng phí này.</p>
+                        <p class="text-muted text-center py-3">
+                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                            Chưa có ai đóng phí này.
+                        </p>
                     }
                     else
                     {
+                        var paidCount = payments.Count(p => p.Status == "Paid");
+                        var pendingCount = payments.Count(p => p.Status == "Pending");
+                        var unpaidCount = payments.Count(p => p.Status == "Unpaid");
+                        var expiredCount = payments.Count(p => p.Status == "Expired");
+                        
+                        <div class="mb-3">
+                            <div class="row g-2">
+                                <div class="col-6 col-md-3">
+                                    <div class="text-center p-2 bg-light rounded">
+                                        <div class="fw-bold text-success">@paidCount</div>
+                                        <small class="text-muted">Đã xác nhận</small>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="text-center p-2 bg-light rounded">
+                                        <div class="fw-bold text-info">@pendingCount</div>
+                                        <small class="text-muted">Chờ xác nhận</small>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="text-center p-2 bg-light rounded">
+                                        <div class="fw-bold text-warning">@unpaidCount</div>
+                                        <small class="text-muted">Chưa đóng</small>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="text-center p-2 bg-light rounded">
+                                        <div class="fw-bold text-danger">@expiredCount</div>
+                                        <small class="text-muted">Quá hạn</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <div class="table-responsive">
                             <table class="table table-sm table-hover">
-                                <thead>
+                                <thead class="table-light">
                                     <tr>
                                         <th>Người đóng</th>
                                         <th>Số tiền</th>
@@ -80,27 +120,35 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach (var payment in payments)
+                                    @foreach (var payment in payments.OrderByDescending(p => p.PaymentDate).ThenBy(p => p.Status))
                                     {
                                         <tr>
-                                            <td>@payment.User.FullName</td>
+                                            <td class="fw-bold">@payment.User?.FullName</td>
                                             <td class="fw-bold text-success">@payment.Amount.ToString("N0") đ</td>
                                             <td>
                                                 @if (payment.Status == "Paid")
                                                 {
-                                                    <span class="badge bg-success">Đã xác nhận</span>
+                                                    <span class="badge bg-success">
+                                                        <i class="bi bi-check-circle me-1"></i>Đã xác nhận
+                                                    </span>
                                                 }
                                                 else if (payment.Status == "Pending")
                                                 {
-                                                    <span class="badge bg-info text-white">Đã đóng, chờ xác nhận</span>
+                                                    <span class="badge bg-info text-white">
+                                                        <i class="bi bi-hourglass-split me-1"></i>Đã đóng, chờ xác nhận
+                                                    </span>
                                                 }
                                                 else if (payment.Status == "Unpaid")
                                                 {
-                                                    <span class="badge bg-warning text-dark">Chưa đóng</span>
+                                                    <span class="badge bg-warning text-dark">
+                                                        <i class="bi bi-clock me-1"></i>Chưa đóng
+                                                    </span>
                                                 }
                                                 else if (payment.Status == "Expired")
                                                 {
-                                                    <span class="badge bg-danger">Quá hạn</span>
+                                                    <span class="badge bg-danger">
+                                                        <i class="bi bi-exclamation-triangle me-1"></i>Quá hạn
+                                                    </span>
                                                 }
                                                 else
                                                 {
@@ -120,9 +168,19 @@
                                             <td>
                                                 @if (payment.Status == "Pending")
                                                 {
-                                                    <a href="/Payment/Confirm/@payment.PaymentId" class="btn btn-sm btn-success">
-                                                        <i class="bi bi-check-circle me-1"></i>Xác nhận
-                                                    </a>
+                                                    <form asp-controller="Payment" asp-action="ConfirmPayment" method="post" style="display: inline;">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="id" value="@payment.PaymentId" />
+                                                        <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Bạn có chắc chắn muốn xác nhận thanh toán này?');">
+                                                            <i class="bi bi-check-circle me-1"></i>Xác nhận
+                                                        </button>
+                                                    </form>
+                                                }
+                                                else if (payment.Status == "Paid")
+                                                {
+                                                    <span class="badge bg-success">
+                                                        <i class="bi bi-check-circle me-1"></i>Đã xác nhận
+                                                    </span>
                                                 }
                                                 else if (payment.Status == "Unpaid" || payment.Status == "Expired")
                                                 {

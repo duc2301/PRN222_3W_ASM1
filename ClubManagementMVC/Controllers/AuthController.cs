@@ -55,15 +55,8 @@ namespace ClubManagementMVC.Controllers
                     new ClaimsPrincipal(claimsIdentity),
                     authProperties);
                 
-                if (user.Role.Equals("ClubManager", StringComparison.OrdinalIgnoreCase)
-                      || user.Role.Equals("Admin", StringComparison.OrdinalIgnoreCase)) 
-                {
-                    return RedirectToAction("MyClubs", "Clubs");
-                }
-                else
-                {
-                    return RedirectToAction("Index", "Home");
-                }
+                // Tất cả user đều redirect về Home/Index sau khi đăng nhập
+                return RedirectToAction("Index", "Home");
 
             }
 

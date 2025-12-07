@@ -117,16 +117,67 @@ namespace ClubManagementMVC.Controllers
         }
         [Authorize(Roles = "Admin,ClubManager")]
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ConfirmPayment(int id)
         {
             var payment = await _services.PaymentService.GetByIdAsync(id);
 
             if (payment == null)
-                return NotFound();
+            {
+                TempData["error"] = "Không tìm thấy thanh toán này.";
+                return RedirectToAction("Index");
+            }
 
-            await _services.PaymentService.MarkAsPaidAsync(id);
+            // Kiểm tra quyền: ClubManager chỉ xác nhận payment của clubs mà họ là leader
+            if (User.IsInRole("ClubManager"))
+            {
+                var username = User.Identity?.Name;
+                var user = await _services.UserService.GetByUsernameAsync(username);
+                
+                if (user == null) return Unauthorized();
 
-            TempData["msg"] = "Ghi nhận thanh toán thành công!";
+                var clubs = await _services.ClubService.GetAllAsync();
+                var myClubIds = clubs.Where(c => c.LeaderId == user.UserId).Select(c => c.ClubId).ToList();
+                
+                // Lấy fee của payment này
+                var allFees = new List<ClubManagement.Service.DTOs.ResponseDTOs.FeeResponseDTO>();
+                foreach (var clubId in myClubIds)
+                {
+                    var fees = await _services.FeeService.GetByClubAsync(clubId);
+                    allFees.AddRange(fees);
+                }
+                var myFeeIds = allFees.Select(f => f.FeeId).ToList();
+                
+                if (!myFeeIds.Contains(payment.FeeId))
+                {
+                    TempData["error"] = "Bạn không có quyền xác nhận thanh toán này.";
+                    return RedirectToAction("Index");
+                }
+            }
+
+            if (payment.Status != "Pending")
+            {
+                TempData["error"] = "Chỉ có thể xác nhận các thanh toán đang chờ xác nhận.";
+                return RedirectToAction("Index");
+            }
+
+            try
+            {
+                await _services.PaymentService.MarkAsPaidAsync(id);
+                TempData["msg"] = "Xác nhận thanh toán thành công!";
+            }
+            catch (Exception ex)
+            {
+                TempData["error"] = ex.Message;
+            }
+
+            // Kiểm tra xem có referrer từ Fees/Details không
+            var referer = Request.Headers["Referer"].ToString();
+            if (referer.Contains("/Fees/Details"))
+            {
+                return Redirect(referer);
+            }
+
             return RedirectToAction("Index");
         }
 
@@ -156,7 +207,7 @@ namespace ClubManagementMVC.Controllers
             try
             {
                 await _services.PaymentService.RequestPaymentAsync(paymentId);
-                TempData["msg"] = "Yêu cầu đóng phí đã được gửi! Vui lòng chờ xác nhận từ chủ câu lạc bộ.";
+                TempData["msg"] = "Đóng phí thành công! Khoản phí đã được xác nhận.";
             }
             catch (Exception ex)
             {
