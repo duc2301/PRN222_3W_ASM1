@@ -10,5 +10,6 @@ namespace ClubManagement.Service.DTOs.RequestDTOs
     {
         public int RequestId { get; set; }
         public int LeaderId { get; set; }
+        public string? Reason { get; set; }
     }
 }

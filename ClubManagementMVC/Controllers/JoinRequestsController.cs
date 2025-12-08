@@ -1,57 +1,42 @@
 ﻿using AutoMapper;
 using ClubManagement.Service.DTOs.RequestDTOs;
-using ClubManagement.Service.DTOs.ResponseDTOs;
 using ClubManagement.Service.ServiceProviders.Interface;
-using ClubManagementMVC.Controllers.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Security.Claims;
-using static ClubManagementMVC.Controllers.JoinRequestsController;
 
 namespace ClubManagementMVC.Controllers
 {
-    
-        public class JoinRequestsController : Controller, IJoinRequestController
+    public class JoinRequestsController : Controller  // XÓA interface
+    {
+        private readonly IServiceProviders _serviceProviders;
+        private readonly IMapper _mapper;
+
+        public JoinRequestsController(IServiceProviders serviceProviders, IMapper mapper)
         {
-            private readonly IServiceProviders _serviceProviders;
-            private readonly IMapper _mapper;
+            _serviceProviders = serviceProviders;
+            _mapper = mapper;
+        }
 
-            public JoinRequestsController(IServiceProviders serviceProviders, IMapper mapper)
-            {
-                _serviceProviders = serviceProviders;
-                _mapper = mapper;
-            }
+        public async Task<IActionResult> Index()
+        {
+            var requests = await _serviceProviders.JoinRequestService.GetAllAsync();
+            return View(requests);
+        }
 
-            // ----------------------------------------------------
-            // GET: JoinRequests
-            // ----------------------------------------------------
-            public async Task<IActionResult> Index()
-            {
-                var requests = await _serviceProviders.JoinRequestService.GetAllAsync();
-                return View(requests);
-            }
-
-
-        // ----------------------------------------------------
-        // GET: JoinRequests/Submit
-        // ----------------------------------------------------
         public async Task<IActionResult> Submit()
         {
-            // Lấy username từ Claims (bạn đang lưu ClaimTypes.Name = Username)
             var username = User.Identity?.Name;
-
-            // Lấy user bằng username
             var user = await _serviceProviders.UserService.GetByUsernameAsync(username);
 
             if (user == null)
                 return Unauthorized();
 
-            // Truyền luôn UserId + Email vào DTO
             var dto = new SubmitJoinRequestDTO
             {
                 UserId = user.UserId,
-                UserEmail = user.Email  // cần thêm vào DTO
+                UserEmail = user.Email
             };
 
             ViewData["ClubId"] = new SelectList(
@@ -63,53 +48,56 @@ namespace ClubManagementMVC.Controllers
             return View(dto);
         }
 
-
-        // POST: JoinRequests/Submit
         [HttpPost]
-            [ValidateAntiForgeryToken]
-            public async Task<IActionResult> Submit(SubmitJoinRequestDTO dto)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Submit(SubmitJoinRequestDTO dto)
+        {
+            if (!ModelState.IsValid)
             {
-                if (!ModelState.IsValid)
-                {
-                    return View(dto);
-                }
-
-                await _serviceProviders.JoinRequestService.SubmitAsync(dto.UserId, dto.ClubId, dto.Note);
-                return RedirectToAction(nameof(Index));
+                return View(dto);
             }
 
+            await _serviceProviders.JoinRequestService.SubmitAsync(dto.UserId, dto.ClubId, dto.Note);
+            return RedirectToAction(nameof(Index));
+        }
 
-        // ----------------------------------------------------
-        // GET: JoinRequests/Approve/5
-        // ----------------------------------------------------
         [Authorize(Roles = "Admin,ClubManager")]
         public async Task<IActionResult> Approve(int id)
         {
-            var username = User.Identity!.Name;
+            try
+            {
+                Console.WriteLine($"🎯 CONTROLLER Approve called - RequestId: {id}");
 
-            var user = await _serviceProviders.UserService.GetByUsernameAsync(username);
+                var username = User.Identity!.Name;
+                Console.WriteLine($"👤 Username: {username}");
 
-            if (user == null)
-                return Unauthorized();
+                var user = await _serviceProviders.UserService.GetByUsernameAsync(username);
 
-            await _serviceProviders.JoinRequestService.ApproveAsync(id, user.UserId);
+                if (user == null)
+                {
+                    Console.WriteLine($"❌ User not found!");
+                    return Unauthorized();
+                }
 
-            return RedirectToAction("Index");
+                Console.WriteLine($"✅ User found - UserId: {user.UserId}");
+                Console.WriteLine($"📞 Calling JoinRequestService.ApproveAsync...");
+
+                await _serviceProviders.JoinRequestService.ApproveAsync(id, user.UserId);
+
+                Console.WriteLine($"✅✅ Approve SUCCESS!");
+
+                TempData["SuccessMessage"] = "Đã duyệt yêu cầu và thêm thành viên vào câu lạc bộ!";
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌❌ ERROR in Controller: {ex.Message}");
+                Console.WriteLine($"StackTrace: {ex.StackTrace}");
+                TempData["ErrorMessage"] = $"Lỗi: {ex.Message}";
+                return RedirectToAction("Index");
+            }
         }
 
-        // POST: JoinRequests/ApproveConfirmed
-        [HttpPost]
-            [ValidateAntiForgeryToken]
-            public async Task<IActionResult> ApproveConfirmed(ApproveJoinRequestDTO dto)
-            {
-                await _serviceProviders.JoinRequestService.ApproveAsync(dto.RequestId, dto.LeaderId);
-                return RedirectToAction(nameof(Index));
-            }
-
-
-        // ----------------------------------------------------
-        // GET: JoinRequests/Reject/5
-        // ----------------------------------------------------
         [HttpGet]
         public async Task<IActionResult> Reject(int id)
         {
@@ -139,9 +127,6 @@ namespace ClubManagementMVC.Controllers
             return View(dto);
         }
 
-
-
-        // POST: JoinRequests/RejectConfirmed
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RejectConfirmed(RejectJoinRequestDTO dto)
@@ -161,9 +146,8 @@ namespace ClubManagementMVC.Controllers
             await _serviceProviders.JoinRequestService
                 .RejectAsync(dto.RequestId, leaderId, dto.Reason);
 
+            TempData["SuccessMessage"] = "Đã từ chối yêu cầu tham gia!";
             return RedirectToAction(nameof(Index));
         }
-
-
     }
 }
