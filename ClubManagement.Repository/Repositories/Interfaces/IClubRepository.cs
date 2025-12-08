@@ -13,5 +13,6 @@ namespace ClubManagement.Repository.Repositories.Interfaces
         Task<List<Club>> GetAllAsync();
         Task<Club> GetByIdAsync(int id);
         Task<bool> ExistsByNameAsync(string name);
+        Task<List<Club>> GetClubsByUsernameAsync(string userName);
     }
 }

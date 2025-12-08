@@ -1,7 +1,9 @@
-﻿using ClubManagement.Repository.Basic.Interfaces;
+﻿using AutoMapper;
+using ClubManagement.Repository.Basic.Interfaces;
 using ClubManagement.Repository.DbContexts;
 using ClubManagement.Repository.Models;
 using ClubManagement.Repository.Repositories.Interfaces;
+using ClubManagement.Service.DTOs.ResponseDTOs;
 using ClubManagement.Service.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -15,15 +17,14 @@ namespace ClubManagement.Service.Services
     public class PaymentService : IPaymentService
     {
         private readonly IPaymentRepository _paymentRepo;
-
         private readonly ClubManagementContext _context;
+        private readonly IMapper _mapper;
 
-        public PaymentService(
-       IPaymentRepository paymentRepo,
-       ClubManagementContext context)
+        public PaymentService(IPaymentRepository paymentRepo, ClubManagementContext context, IMapper mapper)
         {
             _paymentRepo = paymentRepo;
             _context = context;
+            _mapper = mapper;
         }
 
         public async Task<Payment> CreatePaymentAsync(int userId, int feeId, decimal amount)
@@ -47,11 +48,11 @@ namespace ClubManagement.Service.Services
             return await _paymentRepo.GetByIdAsync(id);
         }
 
-
         public async Task<IEnumerable<Payment>> GetAllAsync()
         {
             return await _paymentRepo.GetAllWithDetailsAsync();
         }
+
         public async Task<IEnumerable<Payment>> GetByUserAsync(int userId)
         {
             return await _paymentRepo.GetByUserAsync(userId);
@@ -123,5 +124,10 @@ namespace ClubManagement.Service.Services
             }
         }
 
+        public async Task<List<PaymentResponseDTO>> GetPaymentsByUsernameAsync(string userName)
+        {
+            var myTransaction = await _paymentRepo.GetPaymentsByUsernameAsync(userName);
+            return _mapper.Map<List<PaymentResponseDTO>>(myTransaction);
+        }
     }
 }

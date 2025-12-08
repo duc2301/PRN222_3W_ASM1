@@ -17,6 +17,6 @@ namespace ClubManagement.Repository.Repositories.Interfaces
         Task<bool> HasPaidAsync(int userId, int feeId);
         Task<List<Payment>> GetAllWithDetailsAsync();
         Task<Payment?> GetByIdAsync(int id);
-
+        Task<List<Payment>> GetPaymentsByUsernameAsync(string userName);
     }
 }

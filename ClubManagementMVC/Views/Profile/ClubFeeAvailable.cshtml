@@ -1,0 +1,139 @@
+﻿@using ClubManagement.Service.DTOs.ResponseDTOs
+@model List<FeeResponseDTO>
+
+@{
+    ViewData["Title"] = "Các khoản phí cần đóng";
+    ViewData["ActivePage"] = "Fees"; // Đánh dấu menu active
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    // Lấy thông tin user từ ViewBag để hiển thị Header
+    var currentUser = ViewBag.CurrentUser as UserResponseDTO;
+}
+
+<style>
+    :root {
+        --primary-bg: #f3f4f6;
+        --card-bg: #ffffff;
+    }
+
+    body {
+        background-color: var(--primary-bg);
+    }
+
+    .profile-card-mini {
+        background: #fff;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
+
+    .mini-cover {
+        height: 120px;
+        background: linear-gradient(to right, #2c3e50, #4ca1af);
+        position: relative;
+    }
+
+    .mini-avatar {
+        width: 90px;
+        height: 90px;
+        object-fit: cover;
+        border: 4px solid #fff;
+        border-radius: 15px;
+        position: absolute;
+        bottom: -30px;
+        left: 30px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+</style>
+
+<div class="container py-5">
+    <div class="row">
+        <partial name="ProfileSidebar" />
+
+        <div class="col-md-9">
+
+            <div class="profile-card-mini mb-4">
+                <div class="mini-cover">
+                    <img src="https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small/default-avatar-icon-of-social-media-user-vector.jpg" class="mini-avatar">
+                </div>
+                <div class="card-body pt-5 px-4 d-flex justify-content-between align-items-end">
+                    <div class="mt-1">
+                        <h5 class="fw-bold mb-0">@currentUser?.FullName</h5>
+                        <p class="text-muted small mb-0">@currentUser?.Email</p>
+                    </div>
+                    <div class="text-end">
+                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 10px;">Tổng cần thanh toán</small>
+                        <h2 class="text-danger fw-bold mb-0">@Model.Sum(x => x.Amount).ToString("N0")đ</h2>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm" style="border-radius: 20px;">
+                <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
+                    <h5 class="fw-bold mb-0">Danh sách khoản thu (@Model.Count)</h5>
+                </div>
+                <div class="card-body p-4">
+                    @if (Model != null && Model.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table align-middle table-hover">
+                                <thead class="bg-light text-uppercase small text-muted">
+                                    <tr>
+                                        <th class="border-0 rounded-start">Khoản thu</th>
+                                        <th class="border-0">Mô tả</th>
+                                        <th class="border-0">Hạn đóng</th>
+                                        <th class="border-0 text-end">Số tiền</th>
+                                        <th class="border-0 rounded-end text-center"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var fee in Model)
+                                    {
+                                        <tr>
+                                            <td class="py-3">
+                                                <div class="fw-bold text-dark">@fee.Title</div>
+                                                <div class="small text-primary"><i class="bi bi-people-fill me-1"></i>@fee.ClubName</div>
+                                            </td>
+                                            <td class="text-muted small">
+                                                @(fee.Description?.Length > 30 ? fee.Description.Substring(0, 30) + "..." : fee.Description)
+                                            </td>
+                                            <td>
+                                                @if (fee.DueDate < DateOnly.FromDateTime(DateTime.Now))
+                                                {
+                                                    <span class="badge bg-danger">Quá hạn @fee.DueDate.ToString("dd/MM")</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted small"><i class="bi bi-calendar-event me-1"></i>@fee.DueDate.ToString("dd/MM/yyyy")</span>
+                                                }
+                                            </td>
+                                            <td class="text-end fw-bold text-dark">
+                                                @fee.Amount.ToString("N0")đ
+                                            </td>
+                                            <td class="text-center">
+                                                <a href="#" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                                    Thanh toán
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <div class="mb-3">
+                                <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>
+                            </div>
+                            <h5>Đã hoàn thành!</h5>
+                            <p class="text-muted">Bạn không còn khoản phí nào cần đóng.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

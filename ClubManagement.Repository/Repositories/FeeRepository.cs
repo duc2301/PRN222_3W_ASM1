@@ -36,5 +36,16 @@ namespace ClubManagement.Repository.Repositories
                 .Include(f => f.Club)
                 .FirstOrDefaultAsync(f => f.FeeId == id);
         }
+
+        public async Task<List<Fee>> GetAvailableFeesAsync(string userName)
+        {
+            var availableFees = await _context.Fees
+            .Include(f => f.Payments)
+            .Where(f => f.DueDate >= DateOnly.FromDateTime(DateTime.Now))
+            .Where(f => !f.Payments.Any(p => p.User.Username == userName && p.Status == "Paid"))
+            .ToListAsync();
+
+            return availableFees;
+        }
     }
 }

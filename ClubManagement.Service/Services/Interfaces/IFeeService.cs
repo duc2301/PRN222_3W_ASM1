@@ -11,6 +11,7 @@ namespace ClubManagement.Service.Services.Interfaces
         Task<IEnumerable<FeeResponseDTO>> GetByClubAsync(int clubId);
         Task<FeeResponseDTO> GetByIdAsync(int feeId);
         Task<IEnumerable<FeeResponseDTO>> GetAllAsync();
+        Task<List<FeeResponseDTO>> GetAvailableFeesAsync(string userName);
     }
 }
 

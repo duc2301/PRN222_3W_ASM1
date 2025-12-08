@@ -84,5 +84,10 @@ namespace ClubManagement.Service.Services
             };
         }
 
+        public async Task<List<ClubResponseDTO>> GetClubsByUsernameAsync(string userName)
+        {
+            var clubs = await _unitOfWork.ClubRepository.GetClubsByUsernameAsync(userName);
+            return _mapper.Map<List<ClubResponseDTO>>(clubs);
+        }
     }
 }
