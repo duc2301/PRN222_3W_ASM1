@@ -32,7 +32,9 @@ namespace ClubManagement.Service
             
             // ActivityParticipant mappings
             CreateMap<ActivityParticipant, ActivityParticipantResponseDTO>().ReverseMap();
-            
+
+            CreateMap<Payment, PaymentResponseDTO>().ReverseMap();
+
             // Map phức tạp (Khác tên hoặc lấy dữ liệu từ bảng khác)
             //CreateMap<Club, ClubResponseDTO>()
             //    .ForMember(dest => dest.LeaderName, 

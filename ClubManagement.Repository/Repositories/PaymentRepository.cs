@@ -55,5 +55,18 @@ namespace ClubManagement.Repository.Repositories
                     .ThenInclude(f => f.Club)
                 .ToListAsync();
         }
+
+        public Task<List<Payment>> GetPaymentsByUsernameAsync(string userName)
+        {
+            return _context.Payments
+                .Include(p => p.User)
+                .Include(p => p.Fee)
+                    .ThenInclude(f => f.Club)
+                .Where(p => p.User.Username == userName)
+                .OrderBy(p => p.Status == "Unpaid" ? 0 : (p.Status == "Pending" ? 1 : (p.Status == "Paid" ? 2 : 3))) 
+                .ThenBy(p => p.Fee.DueDate) 
+                .ThenByDescending(p => p.PaymentDate)
+                .ToListAsync();
+        }
     }
 }

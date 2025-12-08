@@ -21,6 +21,6 @@ namespace ClubManagement.Service.Services.Interfaces
         Task<Payment> GetByIdAsync(int id);
         Task RequestPaymentAsync(int paymentId);
         Task CheckAndUpdateExpiredPaymentsAsync();
-
+        Task<List<PaymentResponseDTO>> GetPaymentsByUsernameAsync(string userName);
     }
 }

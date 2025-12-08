@@ -2,6 +2,7 @@
 @model UserResponseDTO
 @{
     ViewData["Title"] = "Hồ sơ của tôi";
+    ViewData["ActivePage"] = "Info"; // Đánh dấu menu active
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -9,67 +10,28 @@
     :root {
         --primary-bg: #f3f4f6;
         --card-bg: #ffffff;
-        --text-main: #333;
-        --text-muted: #777;
-        --accent-color: #0d6efd; /* Màu xanh dương giống nút 'All categories' trong ảnh */
     }
 
     body {
         background-color: var(--primary-bg);
     }
 
-    /* 1. SIDEBAR STYLE (Giống ảnh mẫu bên trái) */
-    .sidebar-nav .nav-link {
-        color: #555;
-        font-weight: 600;
-        padding: 12px 20px;
-        margin-bottom: 5px;
-        border-radius: 8px;
-        transition: all 0.3s;
-    }
-
-    .sidebar-nav .nav-link:hover {
-        background-color: rgba(0,0,0,0.05);
-        color: #000;
-    }
-
-    .sidebar-nav .nav-link.active {
-        color: var(--accent-color);
-        background-color: transparent; /* Ảnh mẫu text xanh, không có nền */
-        border-left: 3px solid var(--accent-color); /* Thêm viền trái để nhấn mạnh */
-        border-radius: 0 8px 8px 0;
-    }
-
-    /* 2. MAIN CONTENT CARD */
+    /* Card Styles */
     .profile-card {
         background: var(--card-bg);
-        border-radius: 20px; /* Bo góc lớn như ảnh */
-        box-shadow: 0 10px 30px rgba(0,0,0,0.05); /* Đổ bóng nhẹ */
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
         border: none;
-        overflow: hidden; /* Để ảnh bìa không tràn ra ngoài */
+        overflow: hidden;
         margin-bottom: 24px;
     }
 
-    /* 3. HEADER BANNER SECTION */
     .profile-cover {
         height: 180px;
-        background: linear-gradient(to right, #2c3e50, #4ca1af); /* Gradient nền tối giống ảnh */
+        background: linear-gradient(to right, #2c3e50, #4ca1af);
         position: relative;
         padding: 20px;
         color: white;
-    }
-
-    .cover-content {
-        display: flex;
-        align-items: center;
-        height: 100%;
-        padding-left: 140px; /* Chừa chỗ cho avatar */
-    }
-
-    .user-avatar-container {
-        position: absolute;
-        top: 40px; /* Đẩy xuống để nằm giữa banner */
-        left: 30px;
     }
 
     .user-avatar {
@@ -77,88 +39,67 @@
         height: 120px;
         object-fit: cover;
         border: 4px solid #fff;
-        border-radius: 15px; /* Bo góc vuông mềm như ảnh mẫu */
+        border-radius: 15px;
         box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        position: absolute;
+        top: 40px;
+        left: 30px;
+    }
+
+    .cover-content {
+        display: flex;
+        align-items: center;
+        height: 100%;
+        padding-left: 140px;
     }
 
     .header-info-item {
         margin-right: 40px;
     }
 
-    .header-info-item label {
-        font-size: 12px;
-        opacity: 0.8;
-        display: block;
-        margin-bottom: 2px;
-    }
+        .header-info-item label {
+            font-size: 12px;
+            opacity: 0.8;
+            display: block;
+            margin-bottom: 2px;
+        }
 
-    .header-info-item span {
-        font-weight: 600;
-        font-size: 15px;
-    }
+        .header-info-item span {
+            font-weight: 600;
+            font-size: 15px;
+        }
 
-    /* Nút edit màu xanh lá/xanh dương ở góc */
     .btn-edit-float {
         position: absolute;
         right: 20px;
         top: 50%;
         transform: translateY(-50%);
-        background: #28a745;
+        background: rgba(255,255,255,0.2);
         color: white;
+        border: 1px solid rgba(255,255,255,0.4);
         width: 40px;
         height: 40px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        border: none;
-        box-shadow: 0 4px 10px rgba(40, 167, 69, 0.4);
     }
 
-    /* Content bên dưới */
-    .card-body-custom {
-        padding: 30px;
-        padding-top: 20px;
-    }
-
-    .section-title {
-        font-weight: 700;
-        margin-bottom: 15px;
-        font-size: 18px;
-    }
+        .btn-edit-float:hover {
+            background: white;
+            color: #333;
+        }
 </style>
 
 <div class="container py-5">
     <div class="row">
-        <div class="col-md-3 mb-4">
-            <div class="d-md-none mb-3 text-center">
-                <img src="@("https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small/default-avatar-icon-of-social-media-user-vector.jpg")" class="rounded-circle" width="80">
-                <h5 class="mt-2">@Model.Username</h5>
-            </div>
-
-            <h5 class="mb-3 px-3 fw-bold text-uppercase text-muted" style="font-size: 12px;">Menu</h5>
-            <div class="nav flex-column nav-pills sidebar-nav" id="v-pills-tab" role="tablist" aria-orientation="vertical">
-                <button class="nav-link active text-start" id="v-pills-info-tab" data-bs-toggle="pill" data-bs-target="#v-pills-info" type="button">
-                    Information
-                </button>
-                <button class="nav-link text-start" id="v-pills-clubs-tab" data-bs-toggle="pill" data-bs-target="#v-pills-clubs" type="button">
-                    My Clubs
-                </button>
-                <button class="nav-link text-start" id="v-pills-trans-tab" data-bs-toggle="pill" data-bs-target="#v-pills-trans" type="button">
-                    Transaction
-                </button>
-                <button class="nav-link text-start" id="v-pills-activity-tab" data-bs-toggle="pill" data-bs-target="#v-pills-activity" type="button">
-                    Activities
-                </button>
-            </div>
-        </div>
+        <partial name="ProfileSidebar" />
 
         <div class="col-md-9">
-
             <div class="profile-card">
                 <div class="profile-cover">
                     <div class="user-avatar-container">
-                        <img src="@( "https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small/default-avatar-icon-of-social-media-user-vector.jpg")" class="user-avatar" alt="User Avatar">
+                        <img src="https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small/default-avatar-icon-of-social-media-user-vector.jpg" class="user-avatar" alt="Avatar">
                     </div>
 
                     <div class="cover-content d-none d-md-flex">
@@ -167,115 +108,50 @@
                             <span>@Model.FullName</span>
                         </div>
                         <div class="header-info-item">
-                            <label>Số điện thoại</label>
-                            <span>@(Model.Phone ?? "---")</span>
-                        </div>
-                        <div class="header-info-item">
                             <label>Email</label>
                             <span>@Model.Email</span>
                         </div>
-
-                        <button class="btn-edit-float" title="Chỉnh sửa hồ sơ">
+                        <div class="header-info-item">
+                            <label>Vai trò</label>
+                            <span>@Model.Role</span>
+                        </div>
+                        <button class="btn-edit-float" title="Chỉnh sửa">
                             <i class="bi bi-pencil"></i>
                         </button>
                     </div>
                 </div>
 
-                <div class="card-body-custom">
-                    <div class="tab-content" id="v-pills-tabContent">
+                <div class="card-body p-4 pt-5 mt-3">
+                    <h4 class="fw-bold mb-4">Thông tin chi tiết</h4>
 
-                        <div class="tab-pane fade show active" id="v-pills-info" role="tabpanel">
-                            <h4 class="section-title">Your Department</h4>
-                            <p class="text-muted">
-                                @(Model.Department ?? "Hãy cập nhật giới thiệu ngắn về bản thân để mọi người hiểu rõ hơn về bạn.")
-                            </p>
-
-                            <hr class="my-4 text-muted opacity-25">
-
-                            <h4 class="section-title">Chi tiết tài khoản</h4>
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="form-label text-muted small">Username</label>
-                                    <input type="text" class="form-control" value="@Model.Username" readonly>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label text-muted small">Vai trò</label>
-                                    <input type="text" class="form-control" value="@Model.Role" readonly>
-                                </div>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small fw-bold text-uppercase">Tên tài khoản</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0"><i class="bi bi-person"></i></span>
+                                <input type="text" class="form-control bg-light border-0" value="@Model.Username" readonly>
                             </div>
                         </div>
-
-                        <div class="tab-pane fade" id="v-pills-clubs" role="tabpanel">
-                            <div class="d-flex justify-content-between align-items-center mb-4">
-                                <h4 class="section-title mb-0">Câu lạc bộ đã tham gia</h4>
-                                <button class="btn btn-sm btn-outline-primary">Tìm CLB mới</button>
-                            </div>
-
-                            <div class="card mb-3 border-0 shadow-sm bg-light">
-                                <div class="card-body d-flex align-items-center">
-                                    <img src="https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small/default-avatar-icon-of-social-media-user-vector.jpg" class="rounded me-3">
-                                    <div class="flex-grow-1">
-                                        <h6 class="mb-1 fw-bold">Câu lạc bộ Lập trình (IT Club)</h6>
-                                        <small class="text-muted">Tham gia: 20/08/2023</small>
-                                    </div>
-                                    <span class="badge bg-success">Thành viên</span>
-                                </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small fw-bold text-uppercase">Số điện thoại</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0"><i class="bi bi-telephone"></i></span>
+                                <input type="text" class="form-control bg-light border-0" value="@(Model.Phone ?? "Chưa cập nhật")" readonly>
                             </div>
                         </div>
-
-                        <div class="tab-pane fade" id="v-pills-trans" role="tabpanel">
-                            <h4 class="section-title">Lịch sử giao dịch</h4>
-                            <div class="table-responsive">
-                                <table class="table align-middle">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>Ngày</th>
-                                            <th>Nội dung</th>
-                                            <th class="text-end">Số tiền</th>
-                                            <th class="text-center">Trạng thái</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>12/10/2023</td>
-                                            <td>Đóng quỹ CLB</td>
-                                            <td class="text-end text-danger fw-bold">-50.000đ</td>
-                                            <td class="text-center"><span class="badge bg-soft-success text-success">Thành công</span></td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                        <div class="col-12">
+                            <label class="form-label text-muted small fw-bold text-uppercase">Giới thiệu / Khoa</label>
+                            <div class="p-3 bg-light rounded border-0">
+                                @(Model.Department ?? "Chưa có thông tin giới thiệu.")
                             </div>
                         </div>
-
-                        <div class="tab-pane fade" id="v-pills-activity" role="tabpanel">
-                            <h4 class="section-title">Hoạt động gần đây</h4>
-                            <div class="ps-3 border-start border-2 border-primary">
-                                <div class="mb-4 position-relative">
-                                    <div class="position-absolute top-0 start-0 translate-middle bg-white p-1" style="left: -17px !important;">
-                                        <div class="bg-primary rounded-circle" style="width: 10px; height: 10px;"></div>
-                                    </div>
-                                    <p class="small text-muted mb-1">2 giờ trước</p>
-                                    <p class="mb-0 fw-bold">Đã đăng ký sự kiện "Workshop AI"</p>
-                                </div>
-                                <div class="mb-4 position-relative">
-                                    <div class="position-absolute top-0 start-0 translate-middle bg-white p-1" style="left: -17px !important;">
-                                        <div class="bg-secondary rounded-circle" style="width: 10px; height: 10px;"></div>
-                                    </div>
-                                    <p class="small text-muted mb-1">Hôm qua</p>
-                                    <p class="mb-0">Cập nhật ảnh đại diện mới.</p>
-                                </div>
-                            </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small fw-bold text-uppercase">Ngày tham gia</label>
+                            <p class="mb-0 fw-bold">@Model.CreatedAt?.ToString("dd/MM/yyyy")</p>
                         </div>
-
                     </div>
                 </div>
             </div>
-
-            <div class="profile-card p-4">
-                <h4 class="section-title">Gợi ý cho bạn</h4>
-                <p class="text-muted">Các sự kiện sắp tới có thể bạn quan tâm...</p>
-            </div>
-
         </div>
     </div>
 </div>

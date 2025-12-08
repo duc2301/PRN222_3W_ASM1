@@ -13,5 +13,6 @@ namespace ClubManagement.Repository.Repositories.Interfaces
         Task<List<Fee>> GetByClubAsync(int clubId);
         Task<List<Fee>> GetAllWithClubAsync();
         Task<Fee> GetByIdWithClubAsync(int id);
+        Task<List<Fee>> GetAvailableFeesAsync(string userName);
     }
 }

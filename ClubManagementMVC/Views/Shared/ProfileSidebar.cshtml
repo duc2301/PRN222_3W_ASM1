@@ -1,0 +1,79 @@
+﻿@using ClubManagement.Service.DTOs.ResponseDTOs
+@{
+    var activePage = ViewData["ActivePage"] as string;
+
+    var currentUser = ViewBag.CurrentUser as UserResponseDTO;
+    if (currentUser == null && Model is UserResponseDTO userModel)
+    {
+        currentUser = userModel;
+    }
+}
+
+<style>
+    .menu-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: #999;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        padding-left: 20px;
+        letter-spacing: 0.5px;
+    }
+
+    .clean-nav-link {
+        display: block;
+        color: #444; 
+        font-weight: 500;
+        padding: 12px 20px;
+        text-decoration: none;
+        border-left: 3px solid transparent; 
+        transition: all 0.2s ease;
+        font-size: 15px;
+    }
+
+        .clean-nav-link:hover {
+            color: #000;
+            text-decoration: none;
+        }
+
+        
+        .clean-nav-link.active {
+            color: #0d6efd; 
+            border-left: 3px solid #0d6efd;
+            font-weight: 600;
+            background-color: transparent;
+        }
+</style>
+
+<div class="col-md-3 mb-4">
+    <div class="d-md-none mb-3 text-center">
+        <img src="https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small/default-avatar-icon-of-social-media-user-vector.jpg" class="rounded-circle" width="80">
+        <h5 class="mt-2">@(currentUser?.FullName ?? "User")</h5>
+    </div>
+
+    <div class="menu-label">Menu</div>
+
+    <div class="nav flex-column">
+
+        <a href="@Url.Action("Index", "Profile")"
+           class="clean-nav-link @(activePage == "Info" ? "active" : "")">
+            Information
+        </a>
+
+        <a href="@Url.Action("MyClub", "Profile")"
+           class="clean-nav-link @(activePage == "Clubs" ? "active" : "")">
+            My Clubs
+        </a>
+
+        <a href="@Url.Action("MyTransaction", "Profile")"
+           class="clean-nav-link @(activePage == "Transactions" ? "active" : "")">
+            Transaction
+        </a>
+
+        <a href="@Url.Action("ClubFeeAvailable", "Profile")"
+           class="clean-nav-link @(activePage == "Fees" || activePage == "Fees" ? "active" : "")">
+            Phí cần thanh toán
+        </a>
+
+    </div>
+</div>

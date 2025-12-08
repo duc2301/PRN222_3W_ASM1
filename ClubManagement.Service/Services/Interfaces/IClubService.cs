@@ -19,5 +19,6 @@ namespace ClubManagement.Service.Services.Interfaces
              string? statusFilter,
             int page,
             int pageSize);
+        Task<List<ClubResponseDTO>> GetClubsByUsernameAsync(string userName);
     }
 }

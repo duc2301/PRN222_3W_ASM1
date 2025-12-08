@@ -38,5 +38,13 @@ namespace ClubManagement.Repository.Repositories
                 .Include(c => c.Leader)
                 .FirstOrDefaultAsync(c => c.ClubId == id);
         }
+
+        public async Task<List<Club>> GetClubsByUsernameAsync(string userName)
+        {
+            var clubs = await _context.Clubs
+                .Where(u => u.Memberships.Any(m => m.User!.Username == userName))
+                .ToListAsync();
+            return clubs;
+        }
     }
 }

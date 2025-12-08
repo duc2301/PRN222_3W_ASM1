@@ -85,6 +85,12 @@ namespace ClubManagement.Service.Services
             var fees = await _unitOfWork.FeeRepository.GetAllWithClubAsync();
             return _mapper.Map<IEnumerable<FeeResponseDTO>>(fees);
         }
+
+        public async Task<List<FeeResponseDTO>> GetAvailableFeesAsync(string userName)
+        {
+            var fees = await _unitOfWork.FeeRepository.GetAvailableFeesAsync(userName);
+            return _mapper.Map<List<FeeResponseDTO>>(fees);
+        }
     }
 }
 
