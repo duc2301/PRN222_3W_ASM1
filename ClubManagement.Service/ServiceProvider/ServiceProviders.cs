@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using ClubManagement.Repository.DbContexts;
+using ClubManagement.Repository.Repositories;
 using ClubManagement.Repository.UnitOfWork.Interface;
 using ClubManagement.Service.ServiceProviders.Interface;
 using ClubManagement.Service.Services;
@@ -28,18 +29,15 @@ namespace ClubManagement.Service.ServiceProviders
 
         public IUserService UserService => new UserService(_unitOfWork, _mapper);
         public IJoinRequestService JoinRequestService
-     => new JoinRequestService(
-         _unitOfWork.JoinRequestRepository,
-         _unitOfWork.MembershipRepository,
-         _unitOfWork.UserRepository,
-         _unitOfWork.ClubRepository,
-         _context);
+            => new JoinRequestService(
+                _unitOfWork,
+                _unitOfWork.MembershipRepository
+            );
         public IPaymentService PaymentService
-        => new PaymentService(
-            _unitOfWork.PaymentRepository,
-            _unitOfWork.DbContext,
-            _mapper
-        );
+     => new PaymentService(
+         _unitOfWork,
+         _mapper
+     );
 
         public IFeeService FeeService => new FeeService(_unitOfWork, _mapper);
     }

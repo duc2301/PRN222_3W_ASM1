@@ -1,133 +1,113 @@
 ﻿using AutoMapper;
-using ClubManagement.Repository.Basic.Interfaces;
-using ClubManagement.Repository.DbContexts;
 using ClubManagement.Repository.Models;
 using ClubManagement.Repository.Repositories.Interfaces;
+using ClubManagement.Repository.UnitOfWork.Interface;
 using ClubManagement.Service.DTOs.ResponseDTOs;
 using ClubManagement.Service.Services.Interfaces;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace ClubManagement.Service.Services
+public class PaymentService : IPaymentService
 {
-    public class PaymentService : IPaymentService
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IPaymentRepository _paymentRepo;
+    private readonly IMapper _mapper;
+
+    public PaymentService(IUnitOfWork unitOfWork, IMapper mapper)
     {
-        private readonly IPaymentRepository _paymentRepo;
-        private readonly ClubManagementContext _context;
-        private readonly IMapper _mapper;
+        _unitOfWork = unitOfWork;
+        _paymentRepo = unitOfWork.PaymentRepository;
+        _mapper = mapper;
+    }
 
-        public PaymentService(IPaymentRepository paymentRepo, ClubManagementContext context, IMapper mapper)
+    public async Task<Payment> CreatePaymentAsync(int userId, int feeId, decimal amount)
+    {
+        var payment = new Payment
         {
-            _paymentRepo = paymentRepo;
-            _context = context;
-            _mapper = mapper;
+            UserId = userId,
+            FeeId = feeId,
+            Amount = amount,
+            PaymentDate = DateTime.Now,
+            Status = "Pending"
+        };
+
+        await _paymentRepo.CreateAsync(payment);
+        await _unitOfWork.SaveChangesAsync();
+
+        return payment;
+    }
+
+    public async Task<Payment> GetByIdAsync(int id)
+    {
+        return await _paymentRepo.GetByIdAsync(id);
+    }
+
+    public async Task<IEnumerable<Payment>> GetAllAsync()
+    {
+        return await _paymentRepo.GetAllWithDetailsAsync();
+    }
+
+    public async Task<IEnumerable<Payment>> GetByUserAsync(int userId)
+    {
+        return await _paymentRepo.GetByUserAsync(userId);
+    }
+
+    public async Task<bool> HasPaidAsync(int userId, int feeId)
+    {
+        return await _paymentRepo.HasPaidAsync(userId, feeId);
+    }
+
+    public async Task MarkAsPaidAsync(int paymentId)
+    {
+        var payment = await _paymentRepo.GetByIdAsync(paymentId);
+
+        if (payment == null)
+            throw new Exception("Payment not found");
+
+        payment.Status = "Paid";
+        payment.PaymentDate = DateTime.Now;
+
+        _paymentRepo.Update(payment);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task RequestPaymentAsync(int paymentId)
+    {
+        var payment = await _paymentRepo.GetByIdAsync(paymentId);
+
+        if (payment == null)
+            throw new Exception("Payment not found");
+
+        if (payment.Status is "Paid" or "Expired" or "Pending")
+            throw new Exception("Invalid payment state");
+
+        payment.Status = "Pending";
+        payment.PaymentDate = DateTime.Now;
+
+        _paymentRepo.Update(payment);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task CheckAndUpdateExpiredPaymentsAsync()
+    {
+        var today = DateOnly.FromDateTime(DateTime.Now);
+
+        var payments = (await _paymentRepo.GetAllWithDetailsAsync())
+            .Where(p => (p.Status == "Unpaid" || p.Status == "Pending")
+                        && p.Fee.DueDate < today)
+            .ToList();
+
+        foreach (var payment in payments)
+        {
+            payment.Status = "Expired";
+            _paymentRepo.Update(payment);
         }
 
-        public async Task<Payment> CreatePaymentAsync(int userId, int feeId, decimal amount)
-        {
-            var payment = new Payment
-            {
-                UserId = userId,
-                FeeId = feeId,
-                Amount = amount,
-                PaymentDate = DateTime.Now,
-                Status = "Pending" // Đổi thành Pending để ClubManager xác nhận
-            };
+        if (payments.Any())
+            await _unitOfWork.SaveChangesAsync();
+    }
 
-            await _paymentRepo.CreateAsync(payment);
-            await _context.SaveChangesAsync();
-
-            return payment;
-        }
-        public async Task<Payment> GetByIdAsync(int id)
-        {
-            return await _paymentRepo.GetByIdAsync(id);
-        }
-
-        public async Task<IEnumerable<Payment>> GetAllAsync()
-        {
-            return await _paymentRepo.GetAllWithDetailsAsync();
-        }
-
-        public async Task<IEnumerable<Payment>> GetByUserAsync(int userId)
-        {
-            return await _paymentRepo.GetByUserAsync(userId);
-        }
-
-        public async Task<bool> HasPaidAsync(int userId, int feeId)
-        {
-            return await _paymentRepo.HasPaidAsync(userId, feeId);
-        }
-        public async Task MarkAsPaidAsync(int paymentId)
-        {
-            var payment = await _context.Payments
-                .AsTracking() 
-                .FirstOrDefaultAsync(p => p.PaymentId == paymentId);
-
-            if (payment == null)
-                throw new Exception("Payment not found");
-
-            payment.Status = "Paid";
-            payment.PaymentDate = DateTime.Now;
-
-            await _context.SaveChangesAsync();
-        }
-
-        // Student xác nhận đóng phí (chuyển từ Unpaid sang Pending - chờ ClubManager xác nhận)
-        public async Task RequestPaymentAsync(int paymentId)
-        {
-            var payment = await _context.Payments
-                .AsTracking()
-                .FirstOrDefaultAsync(p => p.PaymentId == paymentId);
-
-            if (payment == null)
-                throw new Exception("Payment not found");
-
-            if (payment.Status == "Paid")
-                throw new Exception("Payment already confirmed");
-
-            if (payment.Status == "Expired")
-                throw new Exception("Payment has expired");
-
-            if (payment.Status == "Pending")
-                throw new Exception("Payment is already pending confirmation");
-
-            // Chuyển từ Unpaid sang Pending (chờ ClubManager xác nhận)
-            payment.Status = "Pending";
-            payment.PaymentDate = DateTime.Now;
-
-            await _context.SaveChangesAsync();
-        }
-
-        // Kiểm tra và cập nhật trạng thái quá hạn
-        public async Task CheckAndUpdateExpiredPaymentsAsync()
-        {
-            var today = DateOnly.FromDateTime(DateTime.Now);
-            var payments = await _context.Payments
-                .Include(p => p.Fee)
-                .Where(p => (p.Status == "Unpaid" || p.Status == "Pending") && 
-                           p.Fee.DueDate < today)
-                .ToListAsync();
-
-            foreach (var payment in payments)
-            {
-                payment.Status = "Expired";
-            }
-
-            if (payments.Any())
-            {
-                await _context.SaveChangesAsync();
-            }
-        }
-
-        public async Task<List<PaymentResponseDTO>> GetPaymentsByUsernameAsync(string userName)
-        {
-            var myTransaction = await _paymentRepo.GetPaymentsByUsernameAsync(userName);
-            return _mapper.Map<List<PaymentResponseDTO>>(myTransaction);
-        }
+    public async Task<List<PaymentResponseDTO>> GetPaymentsByUsernameAsync(string userName)
+    {
+        var data = await _paymentRepo.GetPaymentsByUsernameAsync(userName);
+        return _mapper.Map<List<PaymentResponseDTO>>(data);
     }
 }

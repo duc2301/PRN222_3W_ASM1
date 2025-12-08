@@ -20,5 +20,6 @@ namespace ClubManagement.Repository.Repositories.Interfaces
 
         Task<Membership?> GetByUserAndClubAsync(int userId, int clubId);
         Task<List<Membership>> GetActiveMembersByClubIdAsync(int clubId);
+        Task<bool> IsActiveMemberAsync(int userId, int clubId);
     }
 }

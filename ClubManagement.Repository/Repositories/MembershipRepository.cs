@@ -74,5 +74,12 @@ namespace ClubManagement.Repository.Repositories
                 .Where(m => m.ClubId == clubId && m.Status == "Active")
                 .ToListAsync();
         }
+        public async Task<bool> IsActiveMemberAsync(int userId, int clubId)
+        {
+            return await _context.Memberships
+                .AnyAsync(m => m.UserId == userId
+                            && m.ClubId == clubId
+                            && m.Status == "Active");
+        }
     }
 }

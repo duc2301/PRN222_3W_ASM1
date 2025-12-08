@@ -34,5 +34,14 @@ namespace ClubManagement.Repository.Repositories
             return await _context.JoinRequests
                 .FirstOrDefaultAsync(j => j.RequestId == requestId); // sửa đúng tên key!
         }
+        public async Task<JoinRequest?> GetPendingRequestAsync(int userId, int clubId)
+        {
+            return await _context.JoinRequests
+                .FirstOrDefaultAsync(jr => jr.UserId == userId
+                                        && jr.ClubId == clubId
+                                        && jr.Status == "Pending");
+        }
+
+
     }
 }

@@ -12,5 +12,6 @@ namespace ClubManagement.Repository.Repositories.Interfaces
     {
         Task<List<JoinRequest>> GetByUserAsync(int userId);
         Task<List<JoinRequest>> GetByClubAsync(int clubId);
+        Task<JoinRequest?> GetPendingRequestAsync(int userId, int clubId);
     }
 }
