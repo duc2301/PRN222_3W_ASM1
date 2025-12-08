@@ -53,17 +53,22 @@
                                             -@item.Amount.ToString("N0")đ
                                         </td>
                                         <td class="text-center">
-                                            @if (item.Status?.ToLower() == "success" || item.Status?.ToLower() == "completed" || item.Status == "Paid")
+                                            @if (item.Status == "Unpaid")
                                             {
-                                                <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill">Thành công</span>
+                                                <form asp-controller="Payment" asp-action="RequestPayment" method="post">
+                                                    <input type="hidden" name="paymentId" value="@item.PaymentId" />
+                                                    <button type="submit" class="btn btn-primary btn-sm">
+                                                        Thanh toán
+                                                    </button>
+                                                </form>
                                             }
-                                            else if (item.Status?.ToLower() == "pending")
+                                            else if (item.Status == "Pending")
                                             {
-                                                <span class="badge bg-warning bg-opacity-10 text-warning px-3 py-2 rounded-pill">Đang chờ</span>
+                                                <span class="badge bg-warning">Đang chờ</span>
                                             }
                                             else
                                             {
-                                                <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill">@item.Status</span>
+                                                <span class="badge bg-success">Thành công</span>
                                             }
                                         </td>
                                     </tr>

@@ -69,5 +69,6 @@ namespace ClubManagementMVC.Controllers
 
             return View(_mapper.Map<List<PaymentResponseDTO>>(myTrasactions));
         }
+
     }
 }
