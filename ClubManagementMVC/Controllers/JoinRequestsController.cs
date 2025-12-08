@@ -52,13 +52,35 @@ namespace ClubManagementMVC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Submit(SubmitJoinRequestDTO dto)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return View(dto);
-            }
+                if (!ModelState.IsValid)
+                {
+                    ViewData["ClubId"] = new SelectList(
+                        await _serviceProviders.ClubService.GetAllAsync(),
+                        "ClubId",
+                        "ClubName"
+                    );
+                    return View(dto);
+                }
 
-            await _serviceProviders.JoinRequestService.SubmitAsync(dto.UserId, dto.ClubId, dto.Note);
-            return RedirectToAction(nameof(Index));
+                await _serviceProviders.JoinRequestService.SubmitAsync(dto.UserId, dto.ClubId, dto.Note);
+
+                TempData["SuccessMessage"] = "Đã gửi yêu cầu tham gia thành công!";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Lỗi logic (đã là member, đã có request pending)
+                TempData["ErrorMessage"] = ex.Message;
+                return RedirectToAction(nameof(Submit));
+            }
+            catch (Exception ex)
+            {
+                // Lỗi khác
+                TempData["ErrorMessage"] = $"Có lỗi xảy ra: {ex.Message}";
+                return RedirectToAction(nameof(Submit));
+            }
         }
 
         [Authorize(Roles = "Admin,ClubManager")]
