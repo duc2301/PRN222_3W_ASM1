@@ -38,7 +38,7 @@ namespace ClubManagementMVC.Controllers
 
                 var claims = new List<Claim>
                 {
-                    new Claim(ClaimTypes.Name, user.Username), 
+                    new Claim(ClaimTypes.Name, user.Username),
                     new Claim(ClaimTypes.Role, user.Role),
                     new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString())
                 };
@@ -46,24 +46,26 @@ namespace ClubManagementMVC.Controllers
                 var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                 var authProperties = new AuthenticationProperties
                 {
-                    IsPersistent = rememberMe, 
-                    ExpiresUtc = DateTime.UtcNow.AddDays(7) 
+                    IsPersistent = rememberMe,
+                    ExpiresUtc = DateTime.UtcNow.AddDays(7)
                 };
 
                 await HttpContext.SignInAsync(
                     CookieAuthenticationDefaults.AuthenticationScheme,
                     new ClaimsPrincipal(claimsIdentity),
                     authProperties);
-                
-                // Tất cả user đều redirect về Home/Index sau khi đăng nhập
-                return RedirectToAction("Index", "Home");
 
+                // Tất cả user đều redirect về Home/Index sau khi đăng nhập
+                if (user.Role != "Student")
+                    return RedirectToAction("MyClubs", "Clubs"); 
+                else
+                    return RedirectToAction("Index", "Home");
             }
 
             return View(loginDto);
         }
 
-        [HttpGet]         
+        [HttpGet]
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
